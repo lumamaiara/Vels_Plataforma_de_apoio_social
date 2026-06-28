@@ -1,0 +1,520 @@
+{% extends 'base.html' %} {% block titulo %}Vels — Feed{% endblock %} {% block
+conteudo %}
+<style>
+  /* Base de Estilo e Fundo */
+  .feed-wrapper {
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background-color: #fafafa; /* Fundo suave para destacar a moldura */
+  }
+
+  /* O Bloco Centralizado Envelopado pela Moldura Desenhar (image_4354c1.png) */
+  .feed-frame-wrapper {
+    position: relative;
+    padding: 2rem 2.5rem; /* Espaço para os detalhes roxos e dourados */
+    width: 100%;
+    max-width: 580px;
+  }
+
+  /* Moldura Roxa Fluida (Borda Externa que você desenhou) */
+  .feed-frame-wrapper::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 3px solid #6b21a8; /* Roxo vibrante do seu desenho */
+    border-radius: 40px 35px 45px 38px / 38px 45px 35px 40px; /* Efeito ondulado e orgânico */
+    pointer-events: none; /* Garante que dá para clicar nos botões por baixo */
+    opacity: 0.85;
+  }
+
+  /* Estrelas e Pontos Dourados (Os detalhes amarelos do seu desenho) */
+  .feed-frame-wrapper::after {
+    content: "✦";
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    font-size: 1.5rem;
+    color: #eab308; /* Amarelo/Ouro do desenho */
+    text-shadow:
+      -20px 400px 0 #eab308,
+      -500px 150px 0 #eab308,
+      -480px 30px 0 #eab308; /* Multiplica as estrelas nas laterais */
+    pointer-events: none;
+  }
+
+  /* Linha Roxa Horizontal Divisória interna que você desenhou entre os blocos */
+  .feed-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+  }
+
+  /* Rótulo Superior de Segurança */
+  .seguro-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Caixa de Publicação */
+  .post-box {
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+    padding: 1.5rem;
+    /* Adiciona a linha roxa curva embaixo da caixa de publicação conforme seu desenho */
+    position: relative;
+  }
+
+  .post-box::after {
+    content: "";
+    position: absolute;
+    bottom: -18px;
+    left: -10px;
+    right: -10px;
+    height: 3px;
+    background: #6b21a8;
+    border-radius: 50%; /* Faz a linha curvar suavemente para baixo */
+    opacity: 0.85;
+  }
+
+  .post-box-top {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .post-box textarea {
+    flex: 1;
+    border: none;
+    resize: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.95rem;
+    color: #1e293b;
+    line-height: 1.6;
+    min-height: 80px;
+    font-family: inherit;
+  }
+
+  .post-box textarea::placeholder {
+    color: #94a3b8;
+  }
+
+  .post-box-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #64748b;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .btn-publicar {
+    background: #0f172a;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .btn-publicar:hover {
+    transform: scale(1.02);
+  }
+
+  /* Cards dos Desabafos */
+  .post-card {
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+    overflow: hidden;
+  }
+
+  /* Bordas de Sentimento Discretas */
+  .post-card.risco-negativo {
+    border-left: 5px solid #ef4444;
+  }
+  .post-card.risco-positivo {
+    border-left: 5px solid #10b981;
+  }
+  .post-card.risco-neutro {
+    border-left: 5px solid #94a3b8;
+  }
+
+  .post-card-body {
+    padding: 1.5rem;
+  }
+
+  .post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
+  .post-autor {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .avatar-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .avatar-navy-bg {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+  .avatar-gold-bg {
+    background: #fef9c3;
+    color: #854d0e;
+  }
+  .avatar-anon-bg {
+    background: #f1f5f9;
+    color: #64748b;
+  }
+
+  .post-autor-info strong {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .post-tempo {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 0.05rem;
+  }
+
+  .post-texto {
+    font-size: 0.95rem;
+    color: #334155;
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+  }
+
+  .post-actions {
+    display: flex;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 1rem;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #64748b;
+    background: none;
+    border: 1px solid transparent;
+    padding: 0.4rem 1rem;
+    border-radius: 9999px;
+    transition: all 0.2s;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .action-btn:hover {
+    color: #ca8a04;
+    background: #fef9c3;
+  }
+
+  .action-btn.apoiado {
+    color: #854d0e;
+    background: #fef08a;
+    font-weight: 600;
+  }
+
+  .post-feedback {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fafafa;
+    padding: 0.6rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+
+  .fb-btn {
+    color: #64748b;
+    text-decoration: none;
+    padding: 0.15rem 0.4rem;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .fb-btn:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+  }
+
+  .badge-premium {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-pos {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  .badge-neg {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  .badge-neu {
+    background-color: #f1f5f9;
+    color: #475569;
+  }
+</style>
+
+<div class="feed-wrapper">
+  <!-- Wrapper da Moldura Customizada -->
+  <div class="feed-frame-wrapper">
+    <div class="feed-container">
+      <div class="seguro-label">
+        <svg
+          width="11"
+          height="11"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        Ambiente Seguro e Confidencial
+      </div>
+
+      <!-- Caixa de Publicação -->
+      <form
+        class="post-box"
+        method="POST"
+        action="{{ url_for('main.criar_post') }}"
+      >
+        <div class="post-box-top">
+          <div class="avatar-circle avatar-navy-bg">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <textarea
+            name="conteudo"
+            placeholder="Como você se sente agora?"
+            id="post-input"
+            required
+          ></textarea>
+        </div>
+        <div class="post-box-bottom">
+          <label class="toggle-wrap">
+            <input
+              type="checkbox"
+              id="anonimo-toggle"
+              name="anonimo"
+              value="true"
+            />
+            <span>Postar de forma anônima</span>
+          </label>
+          <button type="submit" class="btn-publicar">Publicar</button>
+        </div>
+      </form>
+
+      <!-- Container dos Posts -->
+      <div
+        id="posts-container"
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+          margin-top: 0.5rem;
+        "
+      >
+        {% for post in postagens %}
+        <!-- Procure por esta linha e substitua por esta versão: -->
+<div class="post-card {% if 'positivo' in post.sentimento.lower() %}risco-positivo{% elif 'risco' in post.sentimento.lower() or 'negativo' in post.sentimento.lower() %}risco-negativo{% else %}risco-neutro{% endif %}">
+          <div class="post-card-body">
+            <div class="post-header">
+              <div class="post-autor">
+                {% if post.anonimo %}
+                <div class="avatar-circle avatar-anon-bg">
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                </div>
+                <div class="post-autor-info">
+                  <strong>Anônimo</strong>
+                  <div class="post-tempo">Postado recentemente</div>
+                </div>
+                {% else %}
+                <div
+                  class="avatar-circle avatar-gold-bg"
+                  id="feed-avatar-{{ post.id }}"
+                >
+                  {{ post.usuario.nome[0] | upper if post.usuario else 'V' }}
+                </div>
+                <div class="post-autor-info">
+                  <strong
+                    >{{ post.usuario.nome if post.usuario else 'Usuário'
+                    }}</strong
+                  >
+                  <div class="post-tempo">Postado recentemente</div>
+                </div>
+                {% endif %}
+              </div>
+                {% if 'positivo' in post.sentimento.lower() %}
+                  <span class="badge-premium badge-pos">Positivo</span>
+                {% elif 'risco' in post.sentimento.lower() or 'negativo' in post.sentimento.lower() %}
+                  <span class="badge-premium badge-neg">Risco</span>
+                {% else %}
+                  <span class="badge-premium badge-neu">Neutro</span>
+                {% endif %}
+            </div>
+
+            <p class="post-texto">{{ post.texto }}</p>
+
+            <div class="post-actions">
+              <form
+                action="{{ url_for('main.apoiar', post_id=post.id) }}"
+                method="POST"
+                style="display: inline"
+              >
+                {% if post.id in apoios_usuario %}
+                <button type="submit" class="action-btn apoiado">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polygon
+                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                    />
+                  </svg>
+                  Apoiado
+                </button>
+                {% else %}
+                <button type="submit" class="action-btn">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polygon
+                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                    />
+                  </svg>
+                  Apoiar
+                </button>
+                {% endif %}
+              </form>
+            </div>
+          </div>
+
+          <div class="post-feedback">
+            <span>A análise foi precisa?</span>
+            <a
+              href="{{ url_for('main.feedback', post_id=post.id, correto=1) }}"
+              class="fb-btn"
+              >Sim</a
+            >
+            <span style="color: #e2e8f0">|</span>
+            <a
+              href="{{ url_for('main.feedback', post_id=post.id, correto=0) }}"
+              class="fb-btn"
+              >Não</a
+            >
+          </div>
+        </div>
+        {% else %}
+        <div
+          class="post-card"
+          style="
+            padding: 2rem;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+          "
+        >
+          Nenhum desabafo compartilhado na rede ainda. Seja o primeiro!
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const fotoSalva = localStorage.getItem("vels_foto_perfil");
+    if (fotoSalva) {
+      const meusAvatares = document.querySelectorAll("[id^='feed-avatar-']");
+      meusAvatares.forEach(function (av) {
+        av.innerHTML = `<img src="${fotoSalva}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+      });
+    }
+  });
+</script>
+{% endblock %}

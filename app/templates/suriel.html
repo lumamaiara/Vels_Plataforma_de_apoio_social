@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vels — Suriel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='tokens.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='components.css') }}"
+    />
+    <style>
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+      .page-body {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      /* Navbar com indicador de conexão segura */
+      .nav-secure {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: var(--text-xs);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--gold);
+      }
+      .nav-secure svg {
+        color: var(--gold);
+      }
+
+      /* Header do chat (abaixo da navbar) */
+      .chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.9rem var(--space-6);
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow-xs);
+        flex-shrink: 0;
+      }
+      .chat-header-left {
+        display: flex;
+        gap: var(--space-4);
+        align-items: center;
+      }
+      .suriel-av {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--gold);
+        color: var(--navy);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .chat-name {
+        font-size: var(--text-md);
+        font-weight: 700;
+        margin-bottom: 0.15rem;
+      }
+      .chat-status {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+      }
+      .dot-online {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #22c55e;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+      }
+      .chat-sep {
+        color: var(--border);
+      }
+      .btn-menu {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.3rem;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        padding: 0.4rem;
+      }
+
+      /* Área de mensagens */
+      .chat-msgs {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+        padding: var(--space-6);
+        background: var(--bg);
+      }
+      .date-chip {
+        align-self: center;
+        background: #e5e7eb;
+        color: var(--text-muted);
+        font-size: var(--text-xs);
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        padding: 0.22rem 0.9rem;
+        border-radius: var(--radius-full);
+      }
+
+      /* Mensagens */
+      .msg-row {
+        display: flex;
+        flex-direction: column;
+        max-width: 68%;
+      }
+      .msg-row.suriel {
+        align-self: flex-start;
+      }
+      .msg-row.user {
+        align-self: flex-end;
+      }
+
+      .msg-bubble {
+        padding: 0.9rem 1.15rem;
+        border-radius: 18px;
+        font-size: var(--text-base);
+        line-height: 1.65;
+      }
+      .msg-row.suriel .msg-bubble {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border-radius: 4px 18px 18px 18px;
+        box-shadow: var(--shadow-xs);
+        border: 1px solid var(--border);
+      }
+      .msg-row.user .msg-bubble {
+        background: var(--navy-card);
+        color: #e2e8f0;
+        border-radius: 18px 18px 4px 18px;
+      }
+      .msg-hora {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        margin-top: 0.3rem;
+        padding: 0 0.25rem;
+      }
+      .msg-row.user .msg-hora {
+        text-align: right;
+      }
+
+      /* Card de privacidade */
+      .priv-card {
+        align-self: center;
+        max-width: 480px;
+        width: 100%;
+        background: var(--bg-card);
+        border: 1.5px dashed var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        text-align: center;
+      }
+      .priv-card .priv-icon {
+        font-size: 1.5rem;
+        display: block;
+        margin-bottom: 0.4rem;
+      }
+      .priv-card .priv-title {
+        font-size: var(--text-xs);
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--gold);
+        margin-bottom: 0.5rem;
+      }
+      .priv-card p {
+        font-size: var(--text-sm);
+        color: var(--text-muted);
+        line-height: 1.55;
+      }
+
+      /* Digitando */
+      .typing-dots {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        padding: 0.9rem 1.15rem;
+      }
+      .typing-dots span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        animation: blink 1.3s infinite;
+      }
+      .typing-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      @keyframes blink {
+        0%,
+        60%,
+        100% {
+          opacity: 0.3;
+          transform: scale(0.85);
+        }
+        30% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      /* Input */
+      .chat-input-wrap {
+        flex-shrink: 0;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border);
+        padding: var(--space-4) var(--space-5);
+      }
+      .chat-input-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        background: var(--bg);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-full);
+        padding: 0.5rem var(--space-4);
+        transition: border-color var(--transition);
+        position: relative;
+      }
+      .chat-input-row:focus-within {
+        border-color: var(--gold);
+      }
+      .chat-input-row input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: var(--text-base);
+        color: var(--text-primary);
+        font-family: var(--font);
+      }
+      .chat-input-row input::placeholder {
+        color: var(--text-light);
+      }
+      .chat-btn-side {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+      }
+      .chat-btn-side:hover {
+        color: var(--gold);
+      }
+      .chat-send-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--gold);
+        color: var(--navy);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all var(--transition);
+        font-size: 1rem;
+        font-weight: 700;
+      }
+      .chat-send-btn:hover {
+        background: var(--gold-hover);
+        transform: scale(1.08);
+      }
+      .chat-send-btn:disabled {
+        background: var(--border);
+        color: var(--text-muted);
+        transform: none;
+      }
+      .chat-send-btn svg {
+        stroke: var(--navy) !important;
+      }
+      .chat-aviso {
+        text-align: center;
+        font-size: var(--text-xs);
+        color: var(--text-light);
+        margin-top: var(--space-2);
+      }
+
+      /* Painel Suspenso de Emojis */
+      .emoji-picker {
+        display: none;
+        position: absolute;
+        bottom: 50px;
+        right: 40px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        padding: 0.5rem;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+        z-index: 1000;
+        width: 160px;
+      }
+      .emoji-item {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: var(--radius-sm);
+        transition: background 0.2s;
+        text-align: center;
+      }
+      .emoji-item:hover {
+        background: var(--bg);
+      }
+    </style>
+  </head>
+  <body class="page-body">
+    <nav class="navbar">
+      <a href="{{ url_for('main.feed') }}" class="navbar-brand">VELS</a>
+      <div class="navbar-links">
+        <a href="{{ url_for('main.feed') }}">Feed</a>
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      </div>
+      <div class="navbar-right">
+        <div class="nav-badge">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          CONEXÃO SEGURA
+        </div>
+        <a href="{{ url_for('main.suriel_chat') }}" class="nav-icon-btn active">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            />
+          </svg>
+        </a>
+        <a href="{{ url_for('main.perfil') }}" class="nav-icon-btn">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </a>
+      </div>
+    </nav>
+
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <!-- Avatar Temático do Suriel: Xícara de Chá Minimalista -->
+        <div class="suriel-av">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--navy)"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M6 2c.5 1-1 2.5 0 4M10 2c.5 1-1 2.5 0 4M14 2c.5 1-1 2.5 0 4"
+            />
+            <path d="M18 9H4v5a7 7 0 0 0 14 0V9Z" />
+            <path d="M18 11a3 3 0 0 1 0 6" />
+          </svg>
+        </div>
+        <div>
+          <div class="chat-name">Suriel - Assistente de Escuta</div>
+          <div class="chat-status">
+            <span class="dot-online"></span>
+            Disponível agora
+            <span class="chat-sep">•</span>
+            Encriptação de Ponta a Ponta
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-options-container" style="position: relative">
+        <button class="btn-menu" onclick="toggleMenuSuriel()" title="Opções">
+          ⋮
+        </button>
+
+        <div
+          id="dropdown-suriel"
+          style="
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 35px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-md);
+            width: 180px;
+            z-index: 100;
+            overflow: hidden;
+          "
+        >
+          <form
+            action="{{ url_for('main.suriel_limpar') }}"
+            method="POST"
+            onsubmit="
+              return confirm(
+                'Tem certeza que deseja limpar todo o histórico de conversas?',
+              );
+            "
+            style="margin: 0"
+          >
+            <button
+              type="submit"
+              style="
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                width: 100%;
+                padding: 0.75rem var(--space-4);
+                background: none;
+                border: none;
+                font-size: var(--text-xs);
+                font-weight: 600;
+                color: #ef4444;
+                text-align: left;
+                cursor: pointer;
+                font-family: var(--font);
+              "
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
+                />
+              </svg>
+              Reiniciar Chat
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="date-chip">HOJE</div>
+
+      {% for msg in historico %}
+      <div class="msg-row {{ 'suriel' if msg.papel == 'suriel' else 'user' }}">
+        <div class="msg-bubble">{{ msg.conteudo }}</div>
+        <span class="msg-hora">
+          {% if msg.criado_em %} {{ msg.criado_em.strftime('%H:%M') }} {% else
+          %} Recente {% endif %}
+        </span>
+      </div>
+      {% endfor %}
+
+      <div class="priv-card">
+        <span class="priv-icon">🛡</span>
+        <div class="priv-title">PRIVACIDADE GARANTIDA</div>
+        <p>
+          Suas conversas são processadas localmente e anonimizadas. Nenhum dado
+          de saúde é compartilhado com terceiros sem sua autorização explícita.
+        </p>
+      </div>
+    </div>
+
+    <div class="chat-input-wrap">
+      <div class="chat-input-row">
+        <input
+          type="text"
+          id="msg-input"
+          placeholder="Escreva aqui o que está sentindo..."
+          autocomplete="off"
+          onkeydown="handleKey(event)"
+        />
+
+        <button
+          class="chat-btn-side"
+          id="emoji-btn"
+          onclick="toggleEmojiPicker()"
+          title="Emoji"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+            <line x1="9" y1="9" x2="9.01" y2="9" />
+            <line x1="15" y1="9" x2="15.01" y2="9" />
+          </svg>
+        </button>
+
+        <div class="emoji-picker" id="emoji-picker">
+          <button class="emoji-item" onclick="inserirEmoji('❤️')">❤️</button>
+          <button class="emoji-item" onclick="inserirEmoji('🙏')">🙏</button>
+          <button class="emoji-item" onclick="inserirEmoji('✨')">✨</button>
+          <button class="emoji-item" onclick="inserirEmoji('🥺')">🥺</button>
+          <button class="emoji-item" onclick="inserirEmoji('😭')">😭</button>
+          <button class="emoji-item" onclick="inserirEmoji('🙌')">🙌</button>
+          <button class="emoji-item" onclick="inserirEmoji('🌱')">🌱</button>
+          <button class="emoji-item" onclick="inserirEmoji('💛')">💛</button>
+          <button class="emoji-item" onclick="inserirEmoji('🧠')">🧠</button>
+          <button class="emoji-item" onclick="inserirEmoji('💪')">💪</button>
+        </div>
+
+        <button
+          class="chat-send-btn"
+          id="send-btn"
+          onclick="enviar()"
+          title="Enviar"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <line x1="12" y1="19" x2="12" y2="5" />
+            <polyline points="5 12 12 5 19 12" />
+          </svg>
+        </button>
+      </div>
+      <p class="chat-aviso">
+        Se você estiver em uma crisis imediata, por favor, ligue para o CVV
+        (188) ou procure a emergência mais próxima.
+      </p>
+    </div>
+
+    <script>
+      const msgs = document.getElementById("chat-msgs");
+      const input = document.getElementById("msg-input");
+      const sendBtn = document.getElementById("send-btn");
+
+      msgs.scrollTop = msgs.scrollHeight;
+
+      function hora() {
+        return new Date().toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function addMsg(texto, tipo) {
+        const row = document.createElement("div");
+        row.className = `msg-row ${tipo}`;
+        row.innerHTML = `
+        <div class="msg-bubble">${texto.replace(/\n/g, "<br>").replace(/\*\*(.*?)\*\"/g, "<strong>$1</strong>")}</div>
+        <span class="msg-hora">${hora()}</span>
+      `;
+        msgs.appendChild(row);
+        msgs.scrollTop = msgs.scrollHeight;
+        return row;
+      }
+
+      function showTyping() {
+        const row = document.createElement("div");
+        row.className = "msg-row suriel";
+        row.id = "typing";
+        row.innerHTML = `<div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+        msgs.appendChild(row);
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+
+      function hideTyping() {
+        document.getElementById("typing")?.remove();
+      }
+
+      async function enviar() {
+        const texto = input.value.trim();
+        if (!texto) return;
+        addMsg(texto, "user");
+        input.value = "";
+        sendBtn.disabled = true;
+        showTyping();
+
+        try {
+          const res = await fetch("/suriel/mensagem", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mensagem: texto }),
+          });
+          const data = await res.json();
+          hideTyping();
+          if (data.resposta) addMsg(data.resposta, "suriel");
+        } catch (e) {
+          hideTyping();
+          addMsg(
+            "Tive dificuldade de conexão. Se precisar de apoio imediato, ligue **188**.",
+            "suriel",
+          );
+        }
+        sendBtn.disabled = false;
+        input.focus();
+      }
+
+      function handleKey(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          enviar();
+        }
+      }
+
+      function toggleEmojiPicker() {
+        const picker = document.getElementById("emoji-picker");
+        if (picker.style.display === "none" || picker.style.display === "") {
+          picker.style.display = "grid";
+        } else {
+          picker.style.display = "none";
+        }
+      }
+
+      function inserirEmoji(emoji) {
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const textoAtual = input.value;
+
+        input.value =
+          textoAtual.substring(0, start) + emoji + textoAtual.substring(end);
+        input.focus();
+
+        input.selectionStart = input.selectionEnd = start + emoji.length;
+        document.getElementById("emoji-picker").style.display = "none";
+      }
+    </script>
+
+    <script>
+      function toggleMenuSuriel() {
+        const menu = document.getElementById("dropdown-suriel");
+        if (menu.style.display === "none" || menu.style.display === "") {
+          menu.style.display = "block";
+        } else {
+          menu.style.display = "none";
+        }
+      }
+
+      window.addEventListener("click", function (e) {
+        const menu = document.getElementById("dropdown-suriel");
+        const container = document.querySelector(".chat-options-container");
+        const picker = document.getElementById("emoji-picker");
+        const emojiBtn = document.getElementById("emoji-btn");
+
+        if (container && !container.contains(e.target)) {
+          menu.style.display = "none";
+        }
+
+        if (
+          picker &&
+          emojiBtn &&
+          !picker.contains(e.target) &&
+          !emojiBtn.contains(e.target)
+        ) {
+          picker.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>

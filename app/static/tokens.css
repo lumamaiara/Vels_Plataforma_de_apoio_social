@@ -1,0 +1,144 @@
+/* ================================================================
+   VELS — Design Tokens
+   Sistema de design para a plataforma de apoio emocional Vels
+   ================================================================ */
+
+:root {
+  /* Paleta principal */
+  --gold: #c8951a;
+  --gold-hover: #d9a520;
+  --gold-soft: #fdf3dc;
+  --gold-border: #f0d896;
+
+  --navy: #1a2332;
+  --navy-deep: #111827;
+  --navy-card: #1e2d40;
+  --navy-muted: #2d3f55;
+
+  --bg: #f4f4f5;
+  --bg-card: #ffffff;
+  --bg-hover: #f9f9fa;
+
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+
+  --border: #e5e7eb;
+  --border-focus: #c8951a;
+
+  /* Sentimentos */
+  --pos-bg: #ecfdf5;
+  --pos-text: #065f46;
+  --pos-border: #6ee7b7;
+
+  --neu-bg: #f3f4f6;
+  --neu-text: #374151;
+  --neu-border: #d1d5db;
+
+  --neg-bg: #fef2f2;
+  --neg-text: #991b1b;
+  --neg-border: #fca5a5;
+
+  /* Riscos */
+  --risk-low: #22c55e;
+  --risk-mid: #f59e0b;
+  --risk-high: #ef4444;
+
+  /* Tipografia */
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Escala tipográfica */
+  --text-xs: 0.7rem;
+  --text-sm: 0.82rem;
+  --text-base: 0.93rem;
+  --text-md: 1.05rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+
+  /* Espaçamentos */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Bordas */
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Sombras */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.07), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.05);
+  --shadow-gold: 0 4px 20px rgba(200, 149, 26, 0.3);
+
+  /* Transições */
+  --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 320ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout */
+  --navbar-h: 56px;
+  --max-feed: 640px;
+  --max-page: 960px;
+}
+
+/* ── Reset ──────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  cursor: pointer;
+  font-family: var(--font);
+}
+input,
+textarea {
+  font-family: var(--font);
+}
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* ── Scrollbar sutil ─────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-light);
+}

@@ -1,0 +1,37 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Ambientes Virtuais 
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Banco de dados Local (SQLite)
+instance/
+*.db
+*.sqlite
+
+# Configurações do VS Code e editores
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Pastas de build locais e do Vercel
+.vercel/
+build/
+dist/

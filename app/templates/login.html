@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vels — Portal de Acesso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='tokens.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='components.css') }}"
+    />
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: var(--bg);
+      }
+
+      /* Barra de progresso topo */
+      .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 35%;
+        height: 3px;
+        background: var(--gold);
+        border-radius: 0 2px 2px 0;
+      }
+
+      /* Logo topo */
+      .auth-top-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: var(--space-6);
+      }
+      .auth-top-logo .shield {
+        width: 28px;
+        height: 28px;
+        color: var(--gold);
+      }
+      .auth-top-logo .brand-name {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.01em;
+      }
+      .auth-top-logo .divider-dot {
+        width: 24px;
+        height: 2px;
+        background: var(--gold);
+        border-radius: 2px;
+        margin-top: 2px;
+      }
+
+      /* Card principal */
+      .auth-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border);
+        width: 100%;
+        max-width: 420px;
+        overflow: hidden;
+      }
+
+      /* Tabs */
+      .auth-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+      }
+      .auth-tab {
+        flex: 1;
+        padding: 0.9rem var(--space-4);
+        font-size: var(--text-xs);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+        text-align: center;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        transition:
+          color var(--transition),
+          border-color var(--transition);
+        text-decoration: none;
+      }
+      .auth-tab:hover {
+        color: var(--text-primary);
+      }
+      .auth-tab.active {
+        color: var(--gold);
+        border-color: var(--gold);
+      }
+
+      /* Corpo do form */
+      .auth-body {
+        padding: var(--space-8);
+      }
+      .auth-title {
+        font-size: var(--text-xl);
+        font-weight: 700;
+        text-align: center;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+      }
+      .auth-sub {
+        font-size: var(--text-sm);
+        color: var(--text-muted);
+        text-align: center;
+        line-height: 1.55;
+        margin-bottom: var(--space-8);
+      }
+
+      .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+      }
+
+      /* Mensagens de Alerta do Flask (Flash) */
+      .flash-messages {
+        margin-bottom: var(--space-4);
+      }
+      .flash-alert {
+        padding: 0.75rem var(--space-4);
+        font-size: var(--text-sm);
+        border-radius: var(--radius-sm);
+        margin-bottom: 0.5rem;
+        border: 1px solid transparent;
+      }
+      .flash-alert.danger {
+        background-color: #fde8e8;
+        color: #9b1c1c;
+        border-color: #f8b4b4;
+      }
+      .flash-alert.success {
+        background-color: #def7ec;
+        color: #03543f;
+        border-color: #bcf0da;
+      }
+
+      /* Badges de segurança */
+      .auth-trust {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: var(--space-4);
+        margin-top: var(--space-6);
+        padding-top: var(--space-5);
+        border-top: 1px solid var(--border);
+      }
+      .trust-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+      .trust-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--border);
+      }
+
+      /* Rodapé */
+      .auth-footer {
+        max-width: 420px;
+        text-align: center;
+        font-size: var(--text-xs);
+        color: var(--text-light);
+        margin-top: var(--space-6);
+        padding: 0 var(--space-4);
+      }
+    </style>
+  </head>
+  <body class="page-body">
+    <div class="progress-bar"></div>
+
+    <div class="auth-top-logo">
+      <svg
+        class="shield"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+      <div>
+        <div class="brand-name">VELS</div>
+        <div class="divider-dot"></div>
+      </div>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <a href="{{ url_for('main.login') }}" class="auth-tab active">ENTRAR</a>
+        <a href="{{ url_for('main.cadastro') }}" class="auth-tab"
+          >CRIAR CONTA</a
+        >
+      </div>
+
+      <div class="auth-body">
+        <h1 class="auth-title">Portal de Acesso</h1>
+        <p class="auth-sub">
+          Um espaço seguro e gratuito para compartilhar suas vivências e
+          encontrar acolhimento.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+          <div class="flash-alert {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %} {% endwith %}
+
+        <form
+          class="auth-form"
+          action="{{ url_for('main.login') }}"
+          method="POST"
+        >
+          <div class="field-group">
+            <label class="field-label"> ENDEREÇO DE E-MAIL </label>
+            <div class="field-input-wrap">
+              <input
+                type="email"
+                name="email"
+                class="field-input"
+                placeholder="seu@email.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label"> SENHA </label>
+            <div class="field-input-wrap">
+              <input
+                type="password"
+                name="senha"
+                id="senha-input"
+                class="field-input"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                class="field-icon-end"
+                onclick="toggleSenha()"
+                title="Mostrar senha"
+              >
+                <svg
+                  id="eye-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-gold btn-lg btn-full">
+            Entrar no Espaço Seguro
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
+        </form>
+
+        <div class="auth-trust">
+          <div class="trust-item">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Criptografia E2E
+          </div>
+          <div class="trust-dot"></div>
+          <div class="trust-item">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Protocolo HIPAA
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="auth-footer">
+      Vels utiliza tecnologias de isolamento de dados para garantir sua total
+      confidencialidade.
+    </p>
+
+    <script>
+      function toggleSenha() {
+        const input = document.getElementById("senha-input");
+        const icon = document.getElementById("eye-icon");
+        if (input.type === "password") {
+          input.type = "text";
+          icon.innerHTML = `
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        `;
+        } else {
+          input.type = "password";
+          icon.innerHTML = `
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        `;
+        }
+      }
+    </script>
+  </body>
+</html>

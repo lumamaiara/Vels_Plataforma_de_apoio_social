@@ -1,0 +1,75 @@
+body {
+  background-color: #f4f7f6;
+  color: #333;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+  max-width: 700px;
+  margin: 50px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  color: #2c3e50;
+  text-align: center;
+}
+
+textarea {
+  width: 100%;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+textarea:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.btn-enviar {
+  background: #3498db;
+  color: white;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn-filtro {
+  padding: 5px 12px;
+  margin: 0 5px;
+  border: 1px solid #3498db;
+  border-radius: 15px;
+  text-decoration: none;
+  color: #3498db;
+  font-size: 0.85em;
+}
+.btn-filtro.ativo {
+  background: #3498db;
+  color: white;
+}
+
+/* Cores intuitivas para os sentimentos */
+.badge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+.badge-risco {
+  background: #ffd7d7;
+  color: #d63031;
+}
+.badge-neutro {
+  background: #dff9fb;
+  color: #0984e3;
+}
