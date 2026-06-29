@@ -1,6 +1,7 @@
 """
-app/__init__.py — Application Factory da Plataforma Vels
+app/__init__.py — Application Factory da Plataforma Vels 
 """
+import os
 from flask import Flask
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
@@ -15,8 +16,16 @@ bcrypt = Bcrypt()
 def create_app(config: dict | None = None):
     app = Flask(__name__)
 
-    # ── Configurações ──────────────────────────────────────────────────────
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///vels.db'
+    # ── Configurações de Caminho Dinâmico para o Vercel ────────────────────
+    # Se estiver rodando no ambiente do Vercel, usa a pasta /tmp (única com permissão de escrita)
+    if os.environ.get('VERCEL') == '1':
+        db_path = '/tmp/vels.db'
+    else:
+        # Mantém o banco na pasta instance padrão localmente para você não perder seus dados
+        db_path = os.path.join(app.instance_path, 'vels.db')
+        os.makedirs(app.instance_path, exist_ok=True)
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'vels-tcc-luma-ufpi-2025-chave-secreta'
 
