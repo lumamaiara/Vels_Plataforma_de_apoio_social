@@ -308,6 +308,134 @@ conteudo %}
     background-color: #f1f5f9;
     color: #475569;
   }
+
+  /* Alerta Proativo e Ético do CVV no Post */
+  .alerta-cvv-card {
+    background: #fff1f2;
+    border-left: 4px solid #e11d48;
+    border-radius: 12px;
+    padding: 0.85rem 1.15rem;
+    margin: 0.75rem 0 1rem 0;
+    font-size: 0.8rem;
+    color: #9f1239;
+    line-height: 1.4;
+  }
+  .alerta-cvv-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #be123c;
+  }
+
+  /* Seção de Apoio Comunitário (Comentários) */
+  .comentarios-section {
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    padding: 1rem 1.5rem;
+    border-radius: 0 0 24px 24px;
+  }
+  .comentarios-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+  }
+  .comentarios-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+  }
+  .comentario-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.82rem;
+  }
+  .comentario-topo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.2rem;
+  }
+  .comentario-topo strong {
+    color: #1e293b;
+    font-weight: 600;
+  }
+  .comentario-tempo {
+    font-size: 0.7rem;
+    color: #94a3b8;
+  }
+  .comentario-apagar-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 0.25rem;
+  }
+  .comentario-apagar-btn:hover {
+    color: #e11d48;
+  }
+  .comentario-texto {
+    color: #334155;
+    margin: 0;
+    line-height: 1.35;
+  }
+  .comentario-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .comentario-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    background: #ffffff;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .comentario-input:focus {
+    border-color: #6b21a8;
+  }
+  .comentario-form-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .toggle-wrap-sm {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    color: #64748b;
+    cursor: pointer;
+  }
+  .btn-enviar-comentario {
+    background: #0A1128;
+    color: #ffffff;
+    border: none;
+    border-radius: 9999px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-enviar-comentario:hover {
+    opacity: 0.9;
+  }
 </style>
 
 <div class="feed-wrapper">
@@ -430,6 +558,18 @@ conteudo %}
 
             <p class="post-texto">{{ post.texto }}</p>
 
+            {% if post.nivel_risco == 'alto' or 'risco' in (post.sentimento or '').lower() %}
+            <div class="alerta-cvv-card">
+              <div class="alerta-cvv-header">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span>Apoio Imediato & Confidencial</span>
+              </div>
+              <div>Percebemos um momento de dor intensa. Você não precisa passar por isso sozinho(a). Ligue gratuitamente para o <strong>CVV no 188</strong> (24h) ou converse no chat em <strong>cvv.org.br</strong>.</div>
+            </div>
+            {% endif %}
+
             <div class="post-actions">
               <form
                 action="{{ url_for('main.apoiar', post_id=post.id) }}"
@@ -450,7 +590,7 @@ conteudo %}
                       points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
                     />
                   </svg>
-                  Apoiado
+                  Apoiado ({{ post.total_apoios() }})
                 </button>
                 {% else %}
                 <button type="submit" class="action-btn">
@@ -466,11 +606,48 @@ conteudo %}
                       points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
                     />
                   </svg>
-                  Apoiar
+                  Apoiar ({{ post.total_apoios() }})
                 </button>
                 {% endif %}
               </form>
             </div>
+          </div>
+
+          <!-- Seção de Apoio Comunitário (Comentários entre pares) -->
+          <div class="comentarios-section">
+            <div class="comentarios-header">
+              Apoio da Comunidade ({{ post.total_comentarios() }})
+            </div>
+
+            {% if post.comentarios %}
+            <div class="comentarios-lista">
+              {% for com in post.comentarios %}
+              <div class="comentario-item">
+                <div class="comentario-topo">
+                  <strong>{{ com.nome_exibicao() }}</strong>
+                  <span class="comentario-tempo">recentemente</span>
+                  {% if com.usuario_id == current_user.id %}
+                  <form action="{{ url_for('main.apagar_comentario', comentario_id=com.id) }}" method="POST" style="display:inline; margin-left:auto;">
+                    <button type="submit" class="comentario-apagar-btn" title="Remover comentário">&times;</button>
+                  </form>
+                  {% endif %}
+                </div>
+                <p class="comentario-texto">{{ com.texto }}</p>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <form action="{{ url_for('main.comentar', post_id=post.id) }}" method="POST" class="comentario-form">
+              <input type="text" name="conteudo" placeholder="Deixe uma palavra de conforto e acolhimento..." required class="comentario-input">
+              <div class="comentario-form-bottom">
+                <label class="toggle-wrap-sm">
+                  <input type="checkbox" name="anonimo" value="true">
+                  <span>Apoiar anonimamente</span>
+                </label>
+                <button type="submit" class="btn-enviar-comentario">Enviar Apoio</button>
+              </div>
+            </form>
           </div>
 
           <div class="post-feedback">
