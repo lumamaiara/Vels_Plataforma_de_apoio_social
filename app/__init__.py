@@ -7,6 +7,10 @@ from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from .models import db, Usuario
 
 login_manager = LoginManager()
@@ -16,18 +20,30 @@ bcrypt = Bcrypt()
 def create_app(config: dict | None = None):
     app = Flask(__name__)
 
-    # ── Configurações de Caminho Dinâmico para o Vercel ────────────────────
-    # Se estiver rodando no ambiente do Vercel, usa a pasta /tmp (única com permissão de escrita)
-    if os.environ.get('VERCEL') == '1':
-        db_path = '/tmp/vels.db'
-    else:
-        # Mantém o banco na pasta instance padrão localmente para você não perder seus dados
-        db_path = os.path.join(app.instance_path, 'vels.db')
-        os.makedirs(app.instance_path, exist_ok=True)
+    # ── Configurações de Banco e Segurança ─────────────────────────────────
+    secret_key = os.environ.get('SECRET_KEY', 'vels-tcc-luma-ufpi-2025-chave-secreta')
+    database_url = os.environ.get('DATABASE_URL')
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    if database_url:
+        # Corrige URI legada do PostgreSQL para SQLAlchemy 2.0
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_pre_ping': True,
+            'pool_recycle': 300,
+        }
+    else:
+        # Fallback local para desenvolvimento: SQLite na pasta instance
+        if os.environ.get('VERCEL') == '1':
+            db_path = '/tmp/vels.db'
+        else:
+            db_path = os.path.join(app.instance_path, 'vels.db')
+            os.makedirs(app.instance_path, exist_ok=True)
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY'] = 'vels-tcc-luma-ufpi-2025-chave-secreta'
+    app.config['SECRET_KEY'] = secret_key
 
     if config:
         app.config.update(config)

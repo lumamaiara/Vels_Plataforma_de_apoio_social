@@ -9,7 +9,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from flask_bcrypt import Bcrypt
 from sqlalchemy.exc import IntegrityError
 
-from .models import db, Usuario, Postagem, MensagemSuriel, Reacao
+from .models import db, Usuario, Postagem, MensagemSuriel, Reacao, Comentario
 from .ml_utils import analisar_texto
 from . import suriel as suriel_engine
 
@@ -166,6 +166,43 @@ def feedback(post_id, correto):
     return redirect(url_for('main.feed'))
 
 
+@bp.route('/comentar/<int:post_id>', methods=['POST'])
+@login_required
+def comentar(post_id):
+    Postagem.query.get_or_404(post_id)
+    texto = request.form.get('conteudo', '').strip()
+    anonimo = request.form.get('anonimo') == 'true'
+
+    if not texto:
+        flash('Escreva uma mensagem de apoio antes de enviar.', 'danger')
+        return redirect(url_for('main.feed'))
+
+    comentario = Comentario(
+        texto=texto,
+        anonimo=anonimo,
+        postagem_id=post_id,
+        usuario_id=current_user.id
+    )
+    db.session.add(comentario)
+    db.session.commit()
+    flash('Seu apoio foi enviado!', 'success')
+    return redirect(url_for('main.feed'))
+
+
+@bp.route('/apagar-comentario/<int:comentario_id>', methods=['POST'])
+@login_required
+def apagar_comentario(comentario_id):
+    comentario = Comentario.query.get_or_404(comentario_id)
+    if comentario.usuario_id != current_user.id:
+        flash('Você só pode remover seus próprios comentários.', 'danger')
+        return redirect(url_for('main.feed'))
+
+    db.session.delete(comentario)
+    db.session.commit()
+    flash('Comentário removido.', 'success')
+    return redirect(url_for('main.feed'))
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # SURIEL
 # ─────────────────────────────────────────────────────────────────────────────
@@ -264,7 +301,7 @@ def dashboard():
     cont  = {'positivo': 0, 'neutro': 0, 'negativo': 0}
     
     for p in posts:
-        sent_limpo = p.sentimento.lower().strip()
+        sent_limpo = (p.sentimento or 'neutro').lower().strip()
         if 'positivo' in sent_limpo:
             cont['positivo'] += 1
         elif 'risco' in sent_limpo or 'negativo' in sent_limpo:

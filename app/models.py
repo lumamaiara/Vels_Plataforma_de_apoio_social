@@ -20,6 +20,8 @@ class Usuario(UserMixin, db.Model):
 
     postagens     = db.relationship('Postagem', backref='autor', lazy=True,
                                     cascade='all, delete-orphan')
+    comentarios   = db.relationship('Comentario', backref='autor', lazy=True,
+                                    cascade='all, delete-orphan')
     mensagens     = db.relationship('MensagemSuriel', backref='usuario',
                                     lazy=True, cascade='all, delete-orphan')
 
@@ -39,9 +41,14 @@ class Postagem(db.Model):
 
     reacoes       = db.relationship('Reacao', backref='postagem', lazy=True,
                                     cascade='all, delete-orphan')
+    comentarios   = db.relationship('Comentario', backref='postagem', lazy=True,
+                                    cascade='all, delete-orphan')
 
     def total_apoios(self):
         return Reacao.query.filter_by(postagem_id=self.id, tipo='apoio').count()
+
+    def total_comentarios(self):
+        return Comentario.query.filter_by(postagem_id=self.id).count()
 
     def nome_exibicao(self):
         if self.anonimo or not self.autor:
@@ -49,12 +56,27 @@ class Postagem(db.Model):
         return self.autor.nome
 
     def badge_sentimento(self):
-        mapa = {
-            'positivo': ('Sentimento Positivo', 'badge-positivo'),
-            'neutro':   ('Neutro',               'badge-neutro'),
-            'negativo': ('Sinal de Risco',        'badge-risco'),
-        }
-        return mapa.get(self.sentimento, ('Neutro', 'badge-neutro'))
+        s = (self.sentimento or 'neutro').lower().strip()
+        if 'pos' in s:
+            return ('Sentimento Positivo', 'badge-positivo')
+        elif 'neg' in s or 'risco' in s:
+            return ('Sinal de Risco', 'badge-risco')
+        return ('Neutro', 'badge-neutro')
+
+
+class Comentario(db.Model):
+    """Comentário e apoio entre pares em uma postagem (Metodologia Rizomática)."""
+    id            = db.Column(db.Integer, primary_key=True)
+    texto         = db.Column(db.Text, nullable=False)
+    anonimo       = db.Column(db.Boolean, default=False)
+    criado_em     = db.Column(db.DateTime, default=datetime.utcnow)
+    postagem_id   = db.Column(db.Integer, db.ForeignKey('postagem.id'), nullable=False)
+    usuario_id    = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+
+    def nome_exibicao(self):
+        if self.anonimo or not self.autor:
+            return 'Anônimo'
+        return self.autor.nome
 
 
 class MensagemSuriel(db.Model):
@@ -67,7 +89,7 @@ class MensagemSuriel(db.Model):
 
 
 class Reacao(db.Model):
-    """Apoio ou comentário em uma postagem."""
+    """Apoio (curtida/reação positiva) em uma postagem."""
     id            = db.Column(db.Integer, primary_key=True)
     tipo          = db.Column(db.String(20), nullable=False)   # 'apoio'
     criado_em     = db.Column(db.DateTime, default=datetime.utcnow)
