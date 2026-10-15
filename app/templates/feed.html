@@ -1,697 +1,320 @@
-{% extends 'base.html' %} {% block titulo %}Vels — Feed{% endblock %} {% block
-conteudo %}
-<style>
-  /* Base de Estilo e Fundo */
-  .feed-wrapper {
-    min-height: 100vh;
-    padding: 2rem 1rem;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    background-color: #fafafa; /* Fundo suave para destacar a moldura */
-  }
+<!DOCTYPE html>
+<html class="light" lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Vels — Feed de Vivências</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#0A1128",
+            "primary-container": "#0A1128",
+            "on-primary": "#ffffff",
+            "on-primary-container": "#94a3b8",
+            "secondary": "#DAA520",
+            "secondary-container": "#fcc340",
+            "on-secondary-container": "#0A1128",
+            "background": "#F8FAFC",
+            "surface": "#F8FAFC",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f1f5f9",
+            "surface-variant": "#e2e8f0",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#64748b",
+            "outline-variant": "#e2e8f0",
+            "error-container": "#fee2e2",
+            "on-error-container": "#991b1b"
+          },
+          fontFamily: {
+            "headline": ["DM Sans", "sans-serif"],
+            "body": ["Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      vertical-align: middle;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #DAA520;
+    }
+    .toggle-checkbox:checked + .toggle-label .toggle-dot {
+      transform: translateX(100%);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen">
 
-  /* O Bloco Centralizado Envelopado pela Moldura Desenhar (image_4354c1.png) */
-  .feed-frame-wrapper {
-    position: relative;
-    padding: 2rem 2.5rem; /* Espaço para os detalhes roxos e dourados */
-    width: 100%;
-    max-width: 580px;
-  }
+  <!-- TopAppBar Stitch -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-primary shadow-sm border-b border-white/10">
+    <div class="flex justify-between items-center w-full px-4 md:px-8 max-w-5xl mx-auto h-16">
+      <a href="{{ url_for('main.feed') }}" class="font-headline text-2xl font-bold text-secondary tracking-tight">vels</a>
+      
+      <nav class="hidden md:flex items-center space-x-6">
+        <a class="text-secondary border-b-2 border-secondary font-bold pb-1 text-sm transition-all" href="{{ url_for('main.feed') }}">Feed</a>
+        <a class="text-on-primary-container font-medium text-sm hover:text-secondary transition-colors" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      </nav>
 
-  /* Moldura Roxa Fluida (Borda Externa que você desenhou) */
-  .feed-frame-wrapper::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border: 3px solid #6b21a8; /* Roxo vibrante do seu desenho */
-    border-radius: 40px 35px 45px 38px / 38px 45px 35px 40px; /* Efeito ondulado e orgânico */
-    pointer-events: none; /* Garante que dá para clicar nos botões por baixo */
-    opacity: 0.85;
-  }
-
-  /* Estrelas e Pontos Dourados (Os detalhes amarelos do seu desenho) */
-  .feed-frame-wrapper::after {
-    content: "✦";
-    position: absolute;
-    top: -10px;
-    right: 20px;
-    font-size: 1.5rem;
-    color: #eab308; /* Amarelo/Ouro do desenho */
-    text-shadow:
-      -20px 400px 0 #eab308,
-      -500px 150px 0 #eab308,
-      -480px 30px 0 #eab308; /* Multiplica as estrelas nas laterais */
-    pointer-events: none;
-  }
-
-  /* Linha Roxa Horizontal Divisória interna que você desenhou entre os blocos */
-  .feed-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    position: relative;
-  }
-
-  /* Rótulo Superior de Segurança */
-  .seguro-label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    color: #94a3b8;
-    text-transform: uppercase;
-    margin-bottom: 0.25rem;
-  }
-
-  /* Caixa de Publicação */
-  .post-box {
-    background: #ffffff;
-    border-radius: 24px;
-    border: 1px solid rgba(0, 0, 0, 0.03);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
-    padding: 1.5rem;
-    /* Adiciona a linha roxa curva embaixo da caixa de publicação conforme seu desenho */
-    position: relative;
-  }
-
-  .post-box::after {
-    content: "";
-    position: absolute;
-    bottom: -18px;
-    left: -10px;
-    right: -10px;
-    height: 3px;
-    background: #6b21a8;
-    border-radius: 50%; /* Faz a linha curvar suavemente para baixo */
-    opacity: 0.85;
-  }
-
-  .post-box-top {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-
-  .post-box textarea {
-    flex: 1;
-    border: none;
-    resize: none;
-    outline: none;
-    background: transparent;
-    font-size: 0.95rem;
-    color: #1e293b;
-    line-height: 1.6;
-    min-height: 80px;
-    font-family: inherit;
-  }
-
-  .post-box textarea::placeholder {
-    color: #94a3b8;
-  }
-
-  .post-box-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #f1f5f9;
-  }
-
-  .toggle-wrap {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    color: #64748b;
-    cursor: pointer;
-    font-weight: 500;
-  }
-
-  .btn-publicar {
-    background: #0f172a;
-    color: white;
-    border: none;
-    padding: 0.5rem 1.5rem;
-    border-radius: 9999px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-
-  .btn-publicar:hover {
-    transform: scale(1.02);
-  }
-
-  /* Cards dos Desabafos */
-  .post-card {
-    background: #ffffff;
-    border-radius: 24px;
-    border: 1px solid rgba(0, 0, 0, 0.03);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
-    overflow: hidden;
-  }
-
-  /* Bordas de Sentimento Discretas */
-  .post-card.risco-negativo {
-    border-left: 5px solid #ef4444;
-  }
-  .post-card.risco-positivo {
-    border-left: 5px solid #10b981;
-  }
-  .post-card.risco-neutro {
-    border-left: 5px solid #94a3b8;
-  }
-
-  .post-card-body {
-    padding: 1.5rem;
-  }
-
-  .post-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
-  }
-
-  .post-autor {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-  }
-
-  .avatar-circle {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.85rem;
-  }
-  .avatar-navy-bg {
-    background: #e2e8f0;
-    color: #0f172a;
-  }
-  .avatar-gold-bg {
-    background: #fef9c3;
-    color: #854d0e;
-  }
-  .avatar-anon-bg {
-    background: #f1f5f9;
-    color: #64748b;
-  }
-
-  .post-autor-info strong {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #1e293b;
-  }
-
-  .post-tempo {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    margin-top: 0.05rem;
-  }
-
-  .post-texto {
-    font-size: 0.95rem;
-    color: #334155;
-    line-height: 1.65;
-    margin-bottom: 1.25rem;
-  }
-
-  .post-actions {
-    display: flex;
-    border-top: 1px solid #f1f5f9;
-    padding-top: 1rem;
-  }
-
-  .action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
-    color: #64748b;
-    background: none;
-    border: 1px solid transparent;
-    padding: 0.4rem 1rem;
-    border-radius: 9999px;
-    transition: all 0.2s;
-    cursor: pointer;
-    font-weight: 500;
-  }
-
-  .action-btn:hover {
-    color: #ca8a04;
-    background: #fef9c3;
-  }
-
-  .action-btn.apoiado {
-    color: #854d0e;
-    background: #fef08a;
-    font-weight: 600;
-  }
-
-  .post-feedback {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #fafafa;
-    padding: 0.6rem 1.5rem;
-    border-top: 1px solid #f1f5f9;
-    font-size: 0.75rem;
-    color: #94a3b8;
-  }
-
-  .fb-btn {
-    color: #64748b;
-    text-decoration: none;
-    padding: 0.15rem 0.4rem;
-    border-radius: 6px;
-    font-weight: 600;
-  }
-
-  .fb-btn:hover {
-    background: #f1f5f9;
-    color: #1e293b;
-  }
-
-  .badge-premium {
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .badge-pos {
-    background-color: #d1fae5;
-    color: #065f46;
-  }
-  .badge-neg {
-    background-color: #fee2e2;
-    color: #991b1b;
-  }
-  .badge-neu {
-    background-color: #f1f5f9;
-    color: #475569;
-  }
-
-  /* Alerta Proativo e Ético do CVV no Post */
-  .alerta-cvv-card {
-    background: #fff1f2;
-    border-left: 4px solid #e11d48;
-    border-radius: 12px;
-    padding: 0.85rem 1.15rem;
-    margin: 0.75rem 0 1rem 0;
-    font-size: 0.8rem;
-    color: #9f1239;
-    line-height: 1.4;
-  }
-  .alerta-cvv-header {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-weight: 700;
-    margin-bottom: 0.25rem;
-    color: #be123c;
-  }
-
-  /* Seção de Apoio Comunitário (Comentários) */
-  .comentarios-section {
-    background: #f8fafc;
-    border-top: 1px solid #f1f5f9;
-    padding: 1rem 1.5rem;
-    border-radius: 0 0 24px 24px;
-  }
-  .comentarios-header {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.75rem;
-  }
-  .comentarios-lista {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    margin-bottom: 0.85rem;
-  }
-  .comentario-item {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0.65rem 0.9rem;
-    font-size: 0.82rem;
-  }
-  .comentario-topo {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.2rem;
-  }
-  .comentario-topo strong {
-    color: #1e293b;
-    font-weight: 600;
-  }
-  .comentario-tempo {
-    font-size: 0.7rem;
-    color: #94a3b8;
-  }
-  .comentario-apagar-btn {
-    background: none;
-    border: none;
-    color: #94a3b8;
-    font-size: 1.1rem;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0 0.25rem;
-  }
-  .comentario-apagar-btn:hover {
-    color: #e11d48;
-  }
-  .comentario-texto {
-    color: #334155;
-    margin: 0;
-    line-height: 1.35;
-  }
-  .comentario-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .comentario-input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 0.6rem 0.85rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    font-size: 0.82rem;
-    background: #ffffff;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .comentario-input:focus {
-    border-color: #6b21a8;
-  }
-  .comentario-form-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-  .toggle-wrap-sm {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.72rem;
-    color: #64748b;
-    cursor: pointer;
-  }
-  .btn-enviar-comentario {
-    background: #0A1128;
-    color: #ffffff;
-    border: none;
-    border-radius: 9999px;
-    padding: 0.35rem 0.9rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
-  .btn-enviar-comentario:hover {
-    opacity: 0.9;
-  }
-</style>
-
-<div class="feed-wrapper">
-  <!-- Wrapper da Moldura Customizada -->
-  <div class="feed-frame-wrapper">
-    <div class="feed-container">
-      <div class="seguro-label">
-        <svg
-          width="11"
-          height="11"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <rect x="3" y="11" width="18" height="11" rx="2" />
-          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-        Ambiente Seguro e Confidencial
+      <div class="flex items-center space-x-4">
+        <a href="{{ url_for('main.suriel_chat') }}" class="text-on-primary-container hover:text-secondary transition-all p-1" title="Espaço Suriel">
+          <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+        </a>
+        <a href="{{ url_for('main.perfil') }}" class="text-on-primary-container hover:text-secondary transition-all p-1" title="Seu Perfil">
+          <span class="material-symbols-outlined text-[26px]">account_circle</span>
+        </a>
       </div>
+    </div>
+  </header>
 
-      <!-- Caixa de Publicação -->
-      <form
-        class="post-box"
-        method="POST"
-        action="{{ url_for('main.criar_post') }}"
-      >
-        <div class="post-box-top">
-          <div class="avatar-circle avatar-navy-bg">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
+      {% for category, message in messages %}
+      <div class="p-3 mb-2 rounded-lg text-sm shadow-md flex items-center justify-between {% if category == 'danger' or category == 'error' %}bg-red-100 text-red-800 border border-red-200{% else %}bg-green-100 text-green-800 border border-green-200{% endif %}">
+        <span>{{ message }}</span>
+        <button onclick="this.parentElement.remove()" class="text-xs font-bold ml-2">&times;</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Main Feed Area -->
+  <main class="pt-24 pb-28 md:pb-12 min-h-screen px-4">
+    <div class="max-w-[640px] mx-auto">
+      
+      <!-- Caixa de Publicação Stitch -->
+      <section class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 shadow-sm mb-6 transition-all hover:shadow-md">
+        <form action="{{ url_for('main.criar_post') }}" method="POST">
+          <div class="flex items-start space-x-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 text-slate-600">
+              <span class="material-symbols-outlined text-[22px]">person</span>
+            </div>
+            <div class="flex-1">
+              <textarea 
+                name="conteudo" 
+                class="w-full bg-transparent border-none focus:ring-0 resize-none text-on-surface placeholder:text-on-surface-variant text-sm p-1" 
+                id="post-input" 
+                placeholder="Como você se sente agora?" 
+                rows="3" 
+                required
+              ></textarea>
+            </div>
           </div>
-          <textarea
-            name="conteudo"
-            placeholder="Como você se sente agora?"
-            id="post-input"
-            required
-          ></textarea>
-        </div>
-        <div class="post-box-bottom">
-          <label class="toggle-wrap">
-            <input
-              type="checkbox"
-              id="anonimo-toggle"
-              name="anonimo"
-              value="true"
-            />
-            <span>Postar de forma anônima</span>
-          </label>
-          <button type="submit" class="btn-publicar">Publicar</button>
-        </div>
-      </form>
 
-      <!-- Container dos Posts -->
-      <div
-        id="posts-container"
-        style="
-          display: flex;
-          flex-direction: column;
-          gap: 1.25rem;
-          margin-top: 0.5rem;
-        "
-      >
-        {% for post in postagens %}
-        <!-- Procure por esta linha e substitua por esta versão: -->
-<div class="post-card {% if 'positivo' in post.sentimento.lower() %}risco-positivo{% elif 'risco' in post.sentimento.lower() or 'negativo' in post.sentimento.lower() %}risco-negativo{% else %}risco-neutro{% endif %}">
-          <div class="post-card-body">
-            <div class="post-header">
-              <div class="post-autor">
-                {% if post.anonimo %}
-                <div class="avatar-circle avatar-anon-bg">
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                  </svg>
-                </div>
-                <div class="post-autor-info">
-                  <strong>Anônimo</strong>
-                  <div class="post-tempo">Postado recentemente</div>
-                </div>
-                {% else %}
-                <div
-                  class="avatar-circle avatar-gold-bg"
-                  id="feed-avatar-{{ post.id }}"
-                >
-                  {{ post.usuario.nome[0] | upper if post.usuario else 'V' }}
-                </div>
-                <div class="post-autor-info">
-                  <strong
-                    >{{ post.usuario.nome if post.usuario else 'Usuário'
-                    }}</strong
-                  >
-                  <div class="post-tempo">Postado recentemente</div>
-                </div>
-                {% endif %}
-              </div>
-                {% if 'positivo' in post.sentimento.lower() %}
-                  <span class="badge-premium badge-pos">Positivo</span>
-                {% elif 'risco' in post.sentimento.lower() or 'negativo' in post.sentimento.lower() %}
-                  <span class="badge-premium badge-neg">Risco</span>
-                {% else %}
-                  <span class="badge-premium badge-neu">Neutro</span>
-                {% endif %}
+          <div class="flex items-center justify-between pt-3 border-t border-outline-variant">
+            <div class="flex items-center">
+              <input class="hidden toggle-checkbox" id="anonymous-toggle" name="anonimo" value="true" type="checkbox">
+              <label class="toggle-label relative inline-block w-9 h-5 bg-slate-200 rounded-full cursor-pointer transition-colors duration-200" for="anonymous-toggle">
+                <span class="toggle-dot absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-sm"></span>
+              </label>
+              <span class="ml-2 text-xs font-medium text-on-surface-variant">Postar de forma anônima</span>
             </div>
 
-            <p class="post-texto">{{ post.texto }}</p>
+            <button type="submit" class="bg-primary text-on-primary px-5 py-2 rounded-xl text-xs font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm">
+              Publicar
+            </button>
+          </div>
+        </form>
+      </section>
 
-            {% if post.nivel_risco == 'alto' or 'risco' in (post.sentimento or '').lower() %}
-            <div class="alerta-cvv-card">
-              <div class="alerta-cvv-header">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-                <span>Apoio Imediato & Confidencial</span>
+      <!-- Divisor de Segurança e Confidencialidade -->
+      <div class="flex items-center justify-center space-x-1.5 mb-6 opacity-75">
+        <span class="material-symbols-outlined text-[15px] text-secondary" style="font-variation-settings: 'FILL' 1;">lock</span>
+        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Ambiente Seguro e Confidencial</span>
+      </div>
+
+      <!-- Feed Posts Loop -->
+      <div class="space-y-5">
+        {% for post in postagens %}
+        <article class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-sm transition-all hover:border-slate-300">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex items-center space-x-3">
+                {% if post.anonimo %}
+                <div class="w-9 h-9 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">visibility_off</span>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-on-surface">Anônimo</p>
+                  <p class="text-[10px] text-on-surface-variant">Publicado recentemente</p>
+                </div>
+                {% else %}
+                <div class="w-9 h-9 rounded-full bg-slate-900 text-amber-400 font-bold text-sm flex items-center justify-center">
+                  {{ post.autor.nome[0] | upper if post.autor else 'U' }}
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-on-surface">{{ post.nome_exibicao() }}</p>
+                  <p class="text-[10px] text-on-surface-variant">Publicado recentemente</p>
+                </div>
+                {% endif %}
               </div>
-              <div>Percebemos um momento de dor intensa. Você não precisa passar por isso sozinho(a). Ligue gratuitamente para o <strong>CVV no 188</strong> (24h) ou converse no chat em <strong>cvv.org.br</strong>.</div>
+
+              <!-- Badge Sentimento ML Real -->
+              {% set s = (post.sentimento or 'neutro').lower() %}
+              {% if 'pos' in s %}
+              <div class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-md flex items-center space-x-1">
+                <span class="material-symbols-outlined text-[14px]">sentiment_satisfied</span>
+                <span class="text-[11px] font-bold">Sentimento Positivo</span>
+              </div>
+              {% elif 'neg' in s or 'risco' in s %}
+              <div class="bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-md flex items-center space-x-1">
+                <span class="material-symbols-outlined text-[14px]">warning</span>
+                <span class="text-[11px] font-bold">Sinal de Risco</span>
+              </div>
+              {% else %}
+              <div class="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-md flex items-center space-x-1">
+                <span class="material-symbols-outlined text-[14px]">sentiment_neutral</span>
+                <span class="text-[11px] font-bold">Sentimento Neutro</span>
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Conteúdo do Desabafo -->
+            <p class="text-sm text-on-surface leading-relaxed mb-4">
+              {{ post.texto }}
+            </p>
+
+            <!-- Alerta Ético Proativo CVV se for Risco Alto -->
+            {% if post.nivel_risco == 'alto' or 'risco' in s %}
+            <div class="bg-rose-50/80 border border-rose-200 rounded-xl p-3 mb-4 text-xs text-rose-900 flex items-start space-x-2">
+              <span class="material-symbols-outlined text-rose-600 text-[18px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">emergency</span>
+              <div class="flex-1">
+                <p class="font-bold text-rose-800 mb-0.5">Apoio Imediato Disponível</p>
+                <p class="text-[11px] leading-relaxed">Se estiver passando por um momento difícil, lembre-se: você não está só. Converse com alguém de confiança ou ligue gratuitamente para o <strong>CVV no 188</strong> (24h).</p>
+              </div>
             </div>
             {% endif %}
 
-            <div class="post-actions">
-              <form
-                action="{{ url_for('main.apoiar', post_id=post.id) }}"
-                method="POST"
-                style="display: inline"
-              >
+            <!-- Botões de Ação: Apoiar & Comentar -->
+            <div class="flex items-center space-x-6 pt-3 border-t border-outline-variant/60">
+              <form action="{{ url_for('main.apoiar', post_id=post.id) }}" method="POST" class="inline">
                 {% if post.id in apoios_usuario %}
-                <button type="submit" class="action-btn apoiado">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <polygon
-                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
-                    />
-                  </svg>
-                  Apoiado ({{ post.total_apoios() }})
+                <button type="submit" class="flex items-center space-x-1.5 text-amber-600 font-semibold text-xs hover:opacity-80 transition-colors">
+                  <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                  <span>Apoiado ({{ post.total_apoios() }})</span>
                 </button>
                 {% else %}
-                <button type="submit" class="action-btn">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <polygon
-                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
-                    />
-                  </svg>
-                  Apoiar ({{ post.total_apoios() }})
+                <button type="submit" class="flex items-center space-x-1.5 text-on-surface-variant hover:text-amber-600 text-xs transition-colors">
+                  <span class="material-symbols-outlined text-[18px]">star</span>
+                  <span>Apoiar ({{ post.total_apoios() }})</span>
                 </button>
                 {% endif %}
               </form>
+
+              <button onclick="toggleComentarios('{{ post.id }}')" class="flex items-center space-x-1.5 text-on-surface-variant hover:text-primary text-xs transition-colors">
+                <span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+                <span>Comentários ({{ post.total_comentarios() }})</span>
+              </button>
             </div>
           </div>
 
-          <!-- Seção de Apoio Comunitário (Comentários entre pares) -->
-          <div class="comentarios-section">
-            <div class="comentarios-header">
-              Apoio da Comunidade ({{ post.total_comentarios() }})
-            </div>
-
+          <!-- Seção de Comentários (Apoio entre Pares - Metodologia Rizomática) -->
+          <div id="comentarios-box-{{ post.id }}" class="bg-slate-50/70 border-t border-outline-variant/40 p-4">
             {% if post.comentarios %}
-            <div class="comentarios-lista">
+            <div class="space-y-2 mb-3">
               {% for com in post.comentarios %}
-              <div class="comentario-item">
-                <div class="comentario-topo">
-                  <strong>{{ com.nome_exibicao() }}</strong>
-                  <span class="comentario-tempo">recentemente</span>
+              <div class="bg-white border border-slate-200/80 rounded-xl p-2.5 text-xs shadow-2xs">
+                <div class="flex justify-between items-center mb-1 text-[11px]">
+                  <strong class="text-slate-800 font-semibold">{{ com.nome_exibicao() }}</strong>
                   {% if com.usuario_id == current_user.id %}
-                  <form action="{{ url_for('main.apagar_comentario', comentario_id=com.id) }}" method="POST" style="display:inline; margin-left:auto;">
-                    <button type="submit" class="comentario-apagar-btn" title="Remover comentário">&times;</button>
+                  <form action="{{ url_for('main.apagar_comentario', comentario_id=com.id) }}" method="POST" class="inline">
+                    <button type="submit" class="text-slate-400 hover:text-rose-600 text-[13px] leading-none" title="Remover comentário">&times;</button>
                   </form>
                   {% endif %}
                 </div>
-                <p class="comentario-texto">{{ com.texto }}</p>
+                <p class="text-slate-700 leading-normal">{{ com.texto }}</p>
               </div>
               {% endfor %}
             </div>
             {% endif %}
 
-            <form action="{{ url_for('main.comentar', post_id=post.id) }}" method="POST" class="comentario-form">
-              <input type="text" name="conteudo" placeholder="Deixe uma palavra de conforto e acolhimento..." required class="comentario-input">
-              <div class="comentario-form-bottom">
-                <label class="toggle-wrap-sm">
-                  <input type="checkbox" name="anonimo" value="true">
-                  <span>Apoiar anonimamente</span>
+            <form action="{{ url_for('main.comentar', post_id=post.id) }}" method="POST" class="space-y-2">
+              <input 
+                type="text" 
+                name="conteudo" 
+                placeholder="Deixe uma palavra de carinho e apoio solidário..." 
+                class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-secondary focus:border-secondary outline-none transition-all placeholder:text-slate-400" 
+                required
+              >
+              <div class="flex justify-between items-center text-[11px]">
+                <label class="flex items-center space-x-1.5 text-slate-500 cursor-pointer">
+                  <input type="checkbox" name="anonimo" value="true" class="rounded border-slate-300 text-secondary focus:ring-0">
+                  <span>Responder como Anônimo</span>
                 </label>
-                <button type="submit" class="btn-enviar-comentario">Enviar Apoio</button>
+                <button type="submit" class="bg-primary text-white text-[11px] font-semibold px-3 py-1.5 rounded-lg hover:opacity-90 transition-opacity">
+                  Enviar Apoio
+                </button>
               </div>
             </form>
           </div>
 
-          <div class="post-feedback">
-            <span>A análise foi precisa?</span>
-            <a
-              href="{{ url_for('main.feedback', post_id=post.id, correto=1) }}"
-              class="fb-btn"
-              >Sim</a
-            >
-            <span style="color: #e2e8f0">|</span>
-            <a
-              href="{{ url_for('main.feedback', post_id=post.id, correto=0) }}"
-              class="fb-btn"
-              >Não</a
-            >
+          <!-- Feedback de Transparência Algorítmica -->
+          <div class="bg-surface-container-low px-5 py-2 flex justify-between items-center border-t border-outline-variant/40">
+            <span class="text-[10px] text-on-surface-variant italic">A classificação do sentimento foi precisa?</span>
+            <div class="flex items-center space-x-2 text-[10px]">
+              <a href="{{ url_for('main.feedback', post_id=post.id, correto=1) }}" class="font-bold text-slate-500 hover:text-emerald-700">Sim</a>
+              <span class="text-slate-300">|</span>
+              <a href="{{ url_for('main.feedback', post_id=post.id, correto=0) }}" class="font-bold text-slate-500 hover:text-rose-700">Não</a>
+            </div>
           </div>
-        </div>
+        </article>
         {% else %}
-        <div
-          class="post-card"
-          style="
-            padding: 2rem;
-            text-align: center;
-            color: #94a3b8;
-            font-size: 0.9rem;
-          "
-        >
-          Nenhum desabafo compartilhado na rede ainda. Seja o primeiro!
+        <div class="bg-white border border-outline-variant rounded-2xl p-10 text-center text-on-surface-variant text-sm">
+          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">forum</span>
+          <p>Nenhuma vivência compartilhada ainda.</p>
+          <p class="text-xs text-slate-400 mt-1">Seja a primeira pessoa a compartilhar um desabafo acolhedor.</p>
         </div>
         {% endfor %}
       </div>
     </div>
-  </div>
-</div>
+  </main>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const fotoSalva = localStorage.getItem("vels_foto_perfil");
-    if (fotoSalva) {
-      const meusAvatares = document.querySelectorAll("[id^='feed-avatar-']");
-      meusAvatares.forEach(function (av) {
-        av.innerHTML = `<img src="${fotoSalva}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
-      });
+  <!-- Botão Flutuante (FAB): Conversar com Suriel -->
+  <a href="{{ url_for('main.suriel_chat') }}" class="fixed bottom-24 md:bottom-8 right-6 md:right-8 w-14 h-14 bg-secondary text-primary font-bold rounded-full shadow-lg flex flex-col items-center justify-center hover:scale-105 active:scale-95 transition-all z-50 group border border-amber-300" title="Conversar com Suriel">
+    <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+    <span class="text-[8px] tracking-tight uppercase font-extrabold mt-0.5">Suriel</span>
+  </a>
+
+  <!-- BottomNavBar (Apenas em telas mobile) -->
+  <nav class="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-slate-200 shadow-md px-4 py-2 flex justify-around items-center md:hidden">
+    <a href="{{ url_for('main.feed') }}" class="flex flex-col items-center text-secondary font-bold text-[10px]">
+      <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dynamic_feed</span>
+      <span>Feed</span>
+    </a>
+    <a href="{{ url_for('main.dashboard') }}" class="flex flex-col items-center text-slate-500 hover:text-slate-800 text-[10px]">
+      <span class="material-symbols-outlined text-[20px]">dashboard</span>
+      <span>Dashboard</span>
+    </a>
+    <a href="{{ url_for('main.suriel_chat') }}" class="flex flex-col items-center text-slate-500 hover:text-slate-800 text-[10px]">
+      <span class="material-symbols-outlined text-[20px]">smart_toy</span>
+      <span>Suriel</span>
+    </a>
+    <a href="{{ url_for('main.perfil') }}" class="flex flex-col items-center text-slate-500 hover:text-slate-800 text-[10px]">
+      <span class="material-symbols-outlined text-[20px]">person</span>
+      <span>Perfil</span>
+    </a>
+  </nav>
+
+  <script>
+    function toggleComentarios(postId) {
+      const box = document.getElementById('comentarios-box-' + postId);
+      if (box) {
+        box.classList.toggle('hidden');
+      }
     }
-  });
-</script>
-{% endblock %}
+  </script>
+</body>
+</html>

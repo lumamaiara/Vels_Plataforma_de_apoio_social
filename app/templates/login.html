@@ -1,360 +1,185 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vels — Portal de Acesso</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='tokens.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='components.css') }}"
-    />
-    <style>
-      body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        background: var(--bg);
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Vels — Portal de Acesso</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#DAA520",
+            "secondary": "#DAA520",
+            "secondary-container": "#DAA520",
+            "on-secondary-container": "#0A1128",
+            "background": "#F8FAFC",
+            "surface-container-lowest": "#0A1128",
+            "on-surface-variant": "#94a3b8"
+          },
+          fontFamily: {
+            "headline": ["DM Sans", "sans-serif"],
+            "body": ["Inter", "sans-serif"]
+          }
+        }
       }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      vertical-align: middle;
+    }
+    .ambient-glow {
+      background: radial-gradient(circle at 50% 50%, rgba(218, 165, 32, 0.04) 0%, rgba(248, 250, 252, 1) 70%);
+    }
+    .secure-input-focus:focus {
+      box-shadow: 0 0 0 1px #DAA520;
+      background-color: rgba(218, 165, 32, 0.05);
+    }
+    .tab-active {
+      border-bottom: 2px solid #DAA520;
+      color: #DAA520;
+    }
+    @keyframes loading {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(300%); }
+    }
+  </style>
+</head>
+<body class="bg-background font-body text-slate-800 min-h-screen flex flex-col items-center justify-center ambient-glow px-4 py-8">
 
-      /* Barra de progresso topo */
-      .progress-bar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 35%;
-        height: 3px;
-        background: var(--gold);
-        border-radius: 0 2px 2px 0;
-      }
+  <!-- Barra Decorativa de Topo -->
+  <div class="fixed top-0 left-0 w-full h-1 bg-amber-500/10 overflow-hidden pointer-events-none">
+    <div class="h-full bg-secondary w-1/3 animate-[loading_3s_infinite_linear]"></div>
+  </div>
 
-      /* Logo topo */
-      .auth-top-logo {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: var(--space-6);
-      }
-      .auth-top-logo .shield {
-        width: 28px;
-        height: 28px;
-        color: var(--gold);
-      }
-      .auth-top-logo .brand-name {
-        font-size: 1.45rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        letter-spacing: -0.01em;
-      }
-      .auth-top-logo .divider-dot {
-        width: 24px;
-        height: 2px;
-        background: var(--gold);
-        border-radius: 2px;
-        margin-top: 2px;
-      }
-
-      /* Card principal */
-      .auth-card {
-        background: var(--bg-card);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border);
-        width: 100%;
-        max-width: 420px;
-        overflow: hidden;
-      }
-
-      /* Tabs */
-      .auth-tabs {
-        display: flex;
-        border-bottom: 1px solid var(--border);
-      }
-      .auth-tab {
-        flex: 1;
-        padding: 0.9rem var(--space-4);
-        font-size: var(--text-xs);
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        color: var(--text-muted);
-        text-align: center;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -1px;
-        transition:
-          color var(--transition),
-          border-color var(--transition);
-        text-decoration: none;
-      }
-      .auth-tab:hover {
-        color: var(--text-primary);
-      }
-      .auth-tab.active {
-        color: var(--gold);
-        border-color: var(--gold);
-      }
-
-      /* Corpo do form */
-      .auth-body {
-        padding: var(--space-8);
-      }
-      .auth-title {
-        font-size: var(--text-xl);
-        font-weight: 700;
-        text-align: center;
-        letter-spacing: -0.02em;
-        margin-bottom: 0.5rem;
-      }
-      .auth-sub {
-        font-size: var(--text-sm);
-        color: var(--text-muted);
-        text-align: center;
-        line-height: 1.55;
-        margin-bottom: var(--space-8);
-      }
-
-      .auth-form {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-5);
-      }
-
-      /* Mensagens de Alerta do Flask (Flash) */
-      .flash-messages {
-        margin-bottom: var(--space-4);
-      }
-      .flash-alert {
-        padding: 0.75rem var(--space-4);
-        font-size: var(--text-sm);
-        border-radius: var(--radius-sm);
-        margin-bottom: 0.5rem;
-        border: 1px solid transparent;
-      }
-      .flash-alert.danger {
-        background-color: #fde8e8;
-        color: #9b1c1c;
-        border-color: #f8b4b4;
-      }
-      .flash-alert.success {
-        background-color: #def7ec;
-        color: #03543f;
-        border-color: #bcf0da;
-      }
-
-      /* Badges de segurança */
-      .auth-trust {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: var(--space-4);
-        margin-top: var(--space-6);
-        padding-top: var(--space-5);
-        border-top: 1px solid var(--border);
-      }
-      .trust-item {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: var(--text-xs);
-        color: var(--text-muted);
-        font-weight: 500;
-      }
-      .trust-dot {
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: var(--border);
-      }
-
-      /* Rodapé */
-      .auth-footer {
-        max-width: 420px;
-        text-align: center;
-        font-size: var(--text-xs);
-        color: var(--text-light);
-        margin-top: var(--space-6);
-        padding: 0 var(--space-4);
-      }
-    </style>
-  </head>
-  <body class="page-body">
-    <div class="progress-bar"></div>
-
-    <div class="auth-top-logo">
-      <svg
-        class="shield"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      </svg>
-      <div>
-        <div class="brand-name">VELS</div>
-        <div class="divider-dot"></div>
-      </div>
+  <!-- Brand Identity Logo Stitch -->
+  <div class="mb-6 flex flex-col items-center">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+      <span class="font-headline text-3xl font-bold text-slate-900 tracking-tight">vels</span>
     </div>
+    <div class="h-0.5 w-8 bg-secondary/40 rounded-full"></div>
+  </div>
 
-    <div class="auth-card">
-      <div class="auth-tabs">
-        <a href="{{ url_for('main.login') }}" class="auth-tab active">ENTRAR</a>
-        <a href="{{ url_for('main.cadastro') }}" class="auth-tab"
-          >CRIAR CONTA</a
-        >
+  <!-- Main Container Card Escuro Stitch -->
+  <main class="w-full max-w-[440px]">
+    <div class="bg-surface-container-lowest border border-white/10 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300">
+      
+      <!-- Tabs Navigation -->
+      <div class="flex border-b border-white/10 text-xs font-bold uppercase tracking-wider">
+        <a href="{{ url_for('main.login') }}" class="flex-1 py-4 text-center tab-active transition-all">
+          Entrar
+        </a>
+        <a href="{{ url_for('main.cadastro') }}" class="flex-1 py-4 text-center text-on-surface-variant hover:text-white transition-all">
+          Criar Conta
+        </a>
       </div>
 
-      <div class="auth-body">
-        <h1 class="auth-title">Portal de Acesso</h1>
-        <p class="auth-sub">
-          Um espaço seguro e gratuito para compartilhar suas vivências e
-          encontrar acolhimento.
-        </p>
+      <div class="p-6 md:p-8">
+        <header class="mb-6 text-center">
+          <h1 class="font-headline text-2xl font-bold text-white mb-1.5">Portal de Acesso</h1>
+          <p class="text-xs text-on-surface-variant leading-relaxed">Um espaço seguro e gratuito para compartilhar suas vivências e encontrar acolhimento.</p>
+        </header>
 
-        {% with messages = get_flashed_messages(with_categories=true) %} {% if
-        messages %}
-        <div class="flash-messages">
-          {% for category, message in messages %}
-          <div class="flash-alert {{ category }}">{{ message }}</div>
-          {% endfor %}
-        </div>
-        {% endif %} {% endwith %}
-
-        <form
-          class="auth-form"
-          action="{{ url_for('main.login') }}"
-          method="POST"
-        >
-          <div class="field-group">
-            <label class="field-label"> ENDEREÇO DE E-MAIL </label>
-            <div class="field-input-wrap">
-              <input
-                type="email"
-                name="email"
-                class="field-input"
-                placeholder="seu@email.com"
-                autocomplete="email"
-                required
-              />
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          <div class="mb-4">
+            {% for category, message in messages %}
+            <div class="p-3 rounded-lg text-xs font-medium {% if category == 'danger' or category == 'error' %}bg-rose-950/80 text-rose-200 border border-rose-800{% else %}bg-emerald-950/80 text-emerald-200 border border-emerald-800{% endif %}">
+              {{ message }}
             </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% endwith %}
+
+        <form class="space-y-4" action="{{ url_for('main.login') }}" method="POST">
+          <!-- Campo E-mail -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-on-surface-variant flex justify-between items-center" for="email">
+              <span>ENDEREÇO DE E-MAIL</span>
+              <span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">lock</span>
+            </label>
+            <input 
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white secure-input-focus outline-none transition-all placeholder:text-on-surface-variant/40" 
+              id="email" 
+              name="email" 
+              placeholder="seu@email.com" 
+              autocomplete="email"
+              required 
+              type="email"
+            />
           </div>
 
-          <div class="field-group">
-            <label class="field-label"> SENHA </label>
-            <div class="field-input-wrap">
-              <input
-                type="password"
-                name="senha"
-                id="senha-input"
-                class="field-input"
-                placeholder="••••••••"
+          <!-- Campo Senha -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center">
+              <label class="text-[11px] font-bold text-on-surface-variant" for="password">SENHA</label>
+            </div>
+            <div class="relative">
+              <input 
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white secure-input-focus outline-none transition-all placeholder:text-on-surface-variant/40" 
+                id="password" 
+                name="senha" 
+                placeholder="••••••••" 
                 autocomplete="current-password"
-                required
+                required 
+                type="password"
               />
-              <button
-                type="button"
-                class="field-icon-end"
-                onclick="toggleSenha()"
-                title="Mostrar senha"
-              >
-                <svg
-                  id="eye-icon"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
+              <button class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-white transition-colors" onclick="togglePasswordVisibility()" type="button">
+                <span class="material-symbols-outlined text-[20px]" id="pass-icon">visibility</span>
               </button>
             </div>
           </div>
 
-          <button type="submit" class="btn btn-gold btn-lg btn-full">
-            Entrar no Espaço Seguro
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </button>
+          <!-- Botão Dourado de Ação -->
+          <div class="pt-3">
+            <button class="w-full bg-secondary text-on-secondary-container font-headline font-bold text-sm py-3.5 rounded-xl hover:brightness-110 active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 group" type="submit">
+              <span>Entrar no Espaço Seguro</span>
+              <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+          </div>
         </form>
 
-        <div class="auth-trust">
-          <div class="trust-item">
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-            Criptografia E2E
+        <!-- Selos de Confiança e Privacidade Stitch -->
+        <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-center gap-4 opacity-60 text-white">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-secondary">verified_user</span>
+            <span class="text-[11px] font-medium">Criptografia E2E</span>
           </div>
-          <div class="trust-dot"></div>
-          <div class="trust-item">
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-            Protocolo HIPAA
+          <div class="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-secondary">privacy_tip</span>
+            <span class="text-[11px] font-medium">Protocolo HIPAA</span>
           </div>
         </div>
+
       </div>
     </div>
+  </main>
 
-    <p class="auth-footer">
-      Vels utiliza tecnologias de isolamento de dados para garantir sua total
-      confidencialidade.
-    </p>
+  <!-- Rodapé Confidencial -->
+  <footer class="mt-8 text-center text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+    Vels utiliza tecnologias de isolamento de dados para garantir sua total confidencialidade.
+  </footer>
 
-    <script>
-      function toggleSenha() {
-        const input = document.getElementById("senha-input");
-        const icon = document.getElementById("eye-icon");
-        if (input.type === "password") {
-          input.type = "text";
-          icon.innerHTML = `
-          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-          <line x1="1" y1="1" x2="23" y2="23"/>
-        `;
-        } else {
-          input.type = "password";
-          icon.innerHTML = `
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-          <circle cx="12" cy="12" r="3"/>
-        `;
-        }
-      }
-    </script>
-  </body>
+  <script>
+    function togglePasswordVisibility() {
+      const passInput = document.getElementById('password');
+      const passIcon = document.getElementById('pass-icon');
+      const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passInput.setAttribute('type', type);
+      passIcon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+    }
+  </script>
+</body>
 </html>

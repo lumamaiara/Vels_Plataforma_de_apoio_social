@@ -1,534 +1,317 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vels — Mapa das Estrelas</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='tokens.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='components.css') }}"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <style>
-      .dash-wrap {
-        max-width: var(--max-page);
-        margin: 0 auto;
-        padding: var(--space-8) var(--space-6);
-      }
-
-      /* Topo */
-      .dash-top {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: var(--space-8);
-      }
-      .dash-title {
-        font-size: var(--text-2xl);
-        font-weight: 700;
-        letter-spacing: -0.02em;
-      }
-      .dash-sub {
-        font-size: var(--text-sm);
-        color: var(--text-muted);
-        margin-top: 0.3rem;
-      }
-
-      /* Filtros de período */
-      .periodo-group {
-        display: flex;
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        overflow: hidden;
-        background: var(--bg-card);
-        box-shadow: var(--shadow-xs);
-      }
-      .periodo-btn {
-        padding: 0.5rem 1rem;
-        font-size: var(--text-sm);
-        font-weight: 600;
-        color: var(--text-muted);
-        background: none;
-        border: none;
-        cursor: pointer;
-        transition: all var(--transition);
-        border-right: 1px solid var(--border);
-        text-decoration: none;
-      }
-      .periodo-btn:last-child {
-        border-right: none;
-      }
-      .periodo-btn.active {
-        background: var(--navy);
-        color: #fff;
-      }
-      .periodo-btn:hover:not(.active) {
-        background: var(--bg);
-        color: var(--text-primary);
-      }
-
-      /* Grid principal */
-      .dash-grid {
-        display: grid;
-        grid-template-columns: 1fr 300px;
-        gap: var(--space-5);
-        align-items: start;
-      }
-
-      /* Card do gráfico */
-      .chart-card {
-        background: var(--bg-card);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--border);
-        padding: var(--space-6);
-      }
-      .chart-card-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--space-6);
-      }
-      .chart-card-title {
-        font-size: var(--text-md);
-        font-weight: 600;
-      }
-      .chart-shield {
-        color: var(--gold);
-      }
-
-      /* Donut */
-      .donut-wrap {
-        position: relative;
-        max-width: 280px;
-        margin: 0 auto var(--space-6);
-      }
-      .donut-center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        pointer-events: none;
-        min-width: 120px;
-      }
-      .donut-label {
-        font-size: 1.5rem;
-        font-weight: 700;
-        display: block;
-        letter-spacing: -0.02em;
-      }
-      .donut-sub {
-        font-size: var(--text-xs);
-        color: var(--text-muted);
-        display: block;
-      }
-
-      /* Divider */
-      .chart-divider {
-        height: 1px;
-        background: var(--border);
-        margin: 0 calc(-1 * var(--space-6));
-      }
-
-      /* Métricas */
-      .metricas {
-        display: flex;
-        padding-top: var(--space-5);
-      }
-      .metrica {
-        flex: 1;
-        text-align: center;
-        padding: 0 var(--space-3);
-        border-right: 1px solid var(--border);
-      }
-      .metrica:last-child {
-        border-right: none;
-      }
-      .metrica-nome {
-        font-size: var(--text-xs);
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        color: var(--text-muted);
-        display: block;
-        margin-bottom: 0.3rem;
-      }
-      .metrica-valor {
-        font-size: 1.35rem;
-        font-weight: 700;
-        display: block;
-      }
-
-      /* Lateral */
-      .dash-lateral {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-4);
-      }
-
-      /* Alerta card */
-      .alerta-card {
-        background: var(--navy-card);
-        border-radius: var(--radius);
-        padding: var(--space-5);
-        color: #cbd5e1;
-      }
-      .alerta-top {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: var(--text-xs);
-        font-weight: 800;
-        letter-spacing: 0.1em;
-        color: var(--gold);
-        margin-bottom: var(--space-3);
-      }
-      .alerta-card p {
-        font-size: var(--text-sm);
-        line-height: 1.6;
-        margin-bottom: var(--space-4);
-      }
-      .alerta-card p a {
-        color: var(--gold);
-        font-weight: 600;
-      }
-      .btn-cvv {
-        display: block;
-        background: var(--gold);
-        color: var(--navy);
-        text-align: center;
-        font-weight: 700;
-        font-size: var(--text-sm);
-        padding: 0.75rem;
-        border-radius: var(--radius);
-        transition: background var(--transition);
-        text-decoration: none;
-      }
-      .btn-cvv:hover {
-        background: var(--gold-hover);
-      }
-
-      /* Próxima sessão card */
-      .sessao-card {
-        background: var(--bg-card);
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow-xs);
-        padding: var(--space-5);
-      }
-      .sessao-card h3 {
-        font-size: var(--text-base);
-        font-weight: 600;
-        margin-bottom: var(--space-4);
-      }
-      .sessao-item {
-        display: flex;
-        gap: var(--space-3);
-        align-items: center;
-        background: var(--bg);
-        border-radius: var(--radius-sm);
-        padding: var(--space-3);
-      }
-      .sessao-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: var(--radius-sm);
-        background: var(--gold-soft);
-        color: var(--gold);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-      .sessao-info .sessao-hora {
-        font-size: var(--text-xs);
-        color: var(--text-muted);
-      }
-      .sessao-info .sessao-nome {
-        font-size: var(--text-sm);
-        font-weight: 600;
-        margin: 0.1rem 0;
-      }
-      .sessao-secure {
-        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-        font-size: var(--text-xs);
-        color: var(--gold);
-      }
-
-      /* Botão voltar */
-      .btn-voltar-wrap {
-        text-align: center;
-        margin-top: var(--space-8);
-      }
-
-      @media (max-width: 700px) {
-        .dash-grid {
-          grid-template-columns: 1fr;
-        }
-        .dash-top {
-          flex-direction: column;
-          gap: var(--space-4);
+<!DOCTYPE html>
+<html class="light" lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Vels — Mapa das Estrelas & Painel Emocional</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#0A1128",
+            "primary-container": "#141a32",
+            "on-primary": "#ffffff",
+            "on-primary-container": "#7c839f",
+            "secondary": "#DAA520",
+            "secondary-container": "#fcc340",
+            "on-secondary-container": "#0A1128",
+            "background": "#F8FAFC",
+            "surface": "#F8FAFC",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f1f5f9",
+            "surface-variant": "#e0e3e5",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#46464d",
+            "outline-variant": "#c6c6ce",
+            "error": "#ba1a1a",
+            "error-container": "#ffdad6",
+            "on-error-container": "#93000a"
+          },
+          fontFamily: {
+            "headline": ["DM Sans", "sans-serif"],
+            "body": ["Inter", "sans-serif"]
+          }
         }
       }
-    </style>
-  </head>
-  <body class="page-body">
-    <nav class="navbar">
-      <a href="{{ url_for('main.feed') }}" class="navbar-brand">vels</a>
-      <div class="navbar-links">
-        <a href="{{ url_for('main.feed') }}">Feed</a>
-        <a href="{{ url_for('main.dashboard') }}" class="active">Dashboard</a>
-      </div>
-      <div class="navbar-right">
-        <a href="{{ url_for('main.suriel_chat') }}" class="nav-icon-btn">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-            />
-          </svg>
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      vertical-align: middle;
+    }
+    .chart-container { position: relative; max-width: 380px; margin: 0 auto; }
+    .custom-shadow { box-shadow: 0 4px 20px rgba(10, 17, 40, 0.05); }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar Stitch -->
+  <header class="bg-primary border-b border-white/10 z-50 sticky top-0 shadow-sm">
+    <div class="flex justify-between items-center w-full px-4 md:px-8 max-w-6xl mx-auto h-16">
+      <a href="{{ url_for('main.feed') }}" class="font-headline text-2xl font-bold text-secondary tracking-tight">vels</a>
+      
+      <nav class="hidden md:flex items-center space-x-8">
+        <a class="text-on-primary-container font-medium text-sm hover:text-secondary transition-colors" href="{{ url_for('main.feed') }}">Feed</a>
+        <a class="text-secondary border-b-2 border-secondary font-bold pb-1 text-sm transition-all" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      </nav>
+
+      <div class="flex items-center space-x-4">
+        <a href="{{ url_for('main.suriel_chat') }}" class="text-on-primary-container hover:text-secondary transition-all p-1" title="Espaço Suriel">
+          <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
         </a>
-        <a href="{{ url_for('main.perfil') }}" class="nav-icon-btn">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
+        <a href="{{ url_for('main.perfil') }}" class="text-on-primary-container hover:text-secondary transition-all p-1" title="Seu Perfil">
+          <span class="material-symbols-outlined text-[26px]">account_circle</span>
         </a>
       </div>
-    </nav>
+    </div>
+  </header>
 
-    <div class="dash-wrap">
-      <div class="dash-top">
-        <div>
-          <h1 class="dash-title">Mapa das Estrelas</h1>
-          <p class="dash-sub">
-            Visualize suas marés emocionais e encontre clareza no seu percurso.
-          </p>
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="max-w-md mx-auto mt-4 px-4">
+      {% for category, message in messages %}
+      <div class="p-3 mb-2 rounded-lg text-sm shadow-md flex items-center justify-between {% if category == 'danger' or category == 'error' %}bg-red-100 text-red-800 border border-red-200{% else %}bg-green-100 text-green-800 border border-green-200{% endif %}">
+        <span>{{ message }}</span>
+        <button onclick="this.parentElement.remove()" class="text-xs font-bold ml-2">&times;</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Conteúdo Principal -->
+  <main class="max-w-6xl mx-auto px-4 md:px-8 py-8 pb-32 flex-grow w-full">
+    
+    <!-- Dashboard Header & Filters -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="material-symbols-outlined text-secondary text-xl">insights</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-secondary">Inteligência Afetiva</span>
         </div>
-        <div class="periodo-group">
-          <a
-            href="{{ url_for('main.dashboard', periodo=1) }}"
-            class="periodo-btn {{ 'active' if periodo_selecionado == 1 }}"
-            >24h</a
-          >
-          <a
-            href="{{ url_for('main.dashboard', periodo=7) }}"
-            class="periodo-btn {{ 'active' if periodo_selecionado == 7 }}"
-            >7 dias</a
-          >
-          <a
-            href="{{ url_for('main.dashboard', periodo=30) }}"
-            class="periodo-btn {{ 'active' if periodo_selecionado == 30 }}"
-            >30 dias</a
-          >
-        </div>
+        <h1 class="font-headline text-3xl font-bold text-primary">Mapa das Estrelas</h1>
+        <p class="text-sm text-on-surface-variant mt-1">Visualize suas marés emocionais e encontre clareza no seu percurso.</p>
       </div>
 
-      <div class="dash-grid">
-        <div class="chart-card">
-          <div class="chart-card-top">
-            <span class="chart-card-title">Composição do Sentimento</span>
-            <svg
-              class="chart-shield"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </div>
-
-          <div class="donut-wrap">
-            <canvas id="grafico" width="280" height="280"></canvas>
-            <div class="donut-center">
-              <span class="donut-label" id="estado-texto"
-                >{{ metrica_data.estado }}</span
-              >
-              <span class="donut-sub">Estado Médio</span>
-            </div>
-          </div>
-
-          <div class="chart-divider"></div>
-
-          <div class="metricas">
-            <div class="metrica">
-              <span class="metrica-nome">POSITIVO</span>
-              <span class="metrica-valor" id="m-paz"
-                >{{ metrica_data.paz }}%</span
-              >
-            </div>
-            <div class="metrica">
-              <span class="metrica-nome">NEUTRO</span>
-              <span class="metrica-valor" id="m-foco"
-                >{{ metrica_data.neutro }}%</span
-              >
-            </div>
-            <div class="metrica">
-              <span class="metrica-nome">RISCO</span>
-              <span class="metrica-valor" id="m-negativo"
-                >{{ metrica_data.negativo }}%</span
-              >
-            </div>
-          </div>
-        </div>
-
-        <div class="dash-lateral">
-          {% if metrica_data.negativo > 25 %}
-          <div class="alerta-card">
-            <div class="alerta-top">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path
-                  d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
-              ATENÇÃO PRIORITÁRIA
-            </div>
-            <p>
-              Notamos um padrão mais denso em seus registros recentes.
-              Lembre-se: na
-              <a href="{{ url_for('main.feed') }}"><strong>Vels</strong></a
-              >, ninguém caminha sozinho.
-            </p>
-            <a href="tel:188" class="btn-cvv">Procure apoio (CVV 188)</a>
-          </div>
-          {% endif %}
-
-          <div class="sessao-card">
-            <h3>Próxima Monitoria</h3>
-            <div class="sessao-item">
-              <div class="sessao-icon">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-              </div>
-              <div class="sessao-info">
-                <span class="sessao-hora">Disponível 24/7</span>
-                <div class="sessao-nome">Conversa com Suriel</div>
-                <div class="sessao-secure">
-                  <svg
-                    width="11"
-                    height="11"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <rect x="3" y="11" width="18" height="11" rx="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
-                  Conexão Ativa
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="btn-voltar-wrap">
-        <a
-          href="{{ url_for('main.feed') }}"
-          class="btn btn-outline"
-          style="text-decoration: none"
-        >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <line x1="19" y1="12" x2="5" y2="12" />
-            <polyline points="12 19 5 12 12 5" />
-          </svg>
-          Voltar para o Feed
+      <!-- Filters -->
+      <div class="flex bg-surface-container-low p-1 rounded-lg border border-outline-variant self-start md:self-auto shadow-sm">
+        <a href="{{ url_for('main.dashboard', periodo=1) }}" class="px-4 py-1.5 text-xs font-bold rounded transition-all {% if periodo_selecionado == 1 %}bg-surface-container-lowest text-primary shadow-sm border border-slate-200{% else %}text-on-surface-variant hover:text-primary{% endif %}">
+          24h
+        </a>
+        <a href="{{ url_for('main.dashboard', periodo=7) }}" class="px-4 py-1.5 text-xs font-bold rounded transition-all {% if periodo_selecionado == 7 or not periodo_selecionado %}bg-surface-container-lowest text-primary shadow-sm border border-slate-200{% else %}text-on-surface-variant hover:text-primary{% endif %}">
+          7 dias
+        </a>
+        <a href="{{ url_for('main.dashboard', periodo=30) }}" class="px-4 py-1.5 text-xs font-bold rounded transition-all {% if periodo_selecionado == 30 %}bg-surface-container-lowest text-primary shadow-sm border border-slate-200{% else %}text-on-surface-variant hover:text-primary{% endif %}">
+          30 dias
         </a>
       </div>
     </div>
 
-    <script>
-      // O Flask renderiza dinamicamente as variáveis de backend para o Chart.js ler nativamente
-      const pazReal = parseInt("{{ metrica_data.paz }}") || 0;
-      const neutroReal = parseInt("{{ metrica_data.neutro }}") || 0;
-      const negativoReal = parseInt("{{ metrica_data.negativo }}") || 0;
+    <!-- Grid de Métricas -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Main Content: Emotional Doughnut -->
+      <div class="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 md:p-8 custom-shadow flex flex-col items-center justify-center">
+        <div class="w-full mb-6 flex items-center justify-between">
+          <div>
+            <h2 class="font-headline text-xl font-bold text-primary">Composição do Sentimento</h2>
+            <p class="text-xs text-on-surface-variant">Classificação realizada por Machine Learning via PLN</p>
+          </div>
+          <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;" title="Privacidade e Sigilo Garantidos">privacy_tip</span>
+        </div>
 
-      const ctx = document.getElementById("grafico").getContext("2d");
-      const grafico = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-          labels: ["Positivo", "Neutro", "Negativo"],
-          datasets: [
-            {
-              data: [pazReal, neutroReal, negativoReal],
-              backgroundColor: ["#b8860b", "#6b7280", "#ef4444"],
-              borderWidth: 0,
-              hoverOffset: 10,
-            },
+        {% if metrica_data.paz == 0 and metrica_data.neutro == 0 and metrica_data.negativo == 0 %}
+        <!-- Estado Vazio -->
+        <div class="py-16 text-center">
+          <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
+            <span class="material-symbols-outlined text-3xl">auto_graph</span>
+          </div>
+          <h3 class="font-headline font-bold text-lg text-primary mb-1">Nenhum registro no período</h3>
+          <p class="text-sm text-on-surface-variant max-w-sm mx-auto mb-6">
+            Compartilhe como você está se sentindo no feed para alimentar seu mapa de sentimentos.
+          </p>
+          <a href="{{ url_for('main.feed') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors">
+            <span class="material-symbols-outlined text-sm">edit</span> Escrever no Feed
+          </a>
+        </div>
+        {% else %}
+        <!-- Gráfico Donut Chart.js -->
+        <div class="chart-container w-full relative">
+          <canvas id="meuGrafico" height="300"></canvas>
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
+            <span class="font-headline text-2xl font-bold {% if metrica_data.estado == 'Atenção' %}text-rose-600{% elif metrica_data.estado == 'Sereno' %}text-amber-600{% else %}text-primary{% endif %}">
+              {{ metrica_data.estado }}
+            </span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Estado Médio</span>
+          </div>
+        </div>
+
+        <!-- Indicadores Numéricos -->
+        <div class="mt-8 grid grid-cols-3 gap-4 w-full border-t border-outline-variant pt-6">
+          <div class="text-center">
+            <div class="text-xs font-bold text-on-surface-variant uppercase mb-1 flex items-center justify-center gap-1">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#DAA520] inline-block"></span>
+              Paz (Positivo)
+            </div>
+            <div class="font-headline text-2xl font-bold text-primary">{{ metrica_data.paz }}%</div>
+          </div>
+          <div class="text-center border-l border-outline-variant">
+            <div class="text-xs font-bold text-on-surface-variant uppercase mb-1 flex items-center justify-center gap-1">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#0A1128] inline-block"></span>
+              Equilíbrio (Neutro)
+            </div>
+            <div class="font-headline text-2xl font-bold text-primary">{{ metrica_data.neutro }}%</div>
+          </div>
+          <div class="text-center border-l border-outline-variant">
+            <div class="text-xs font-bold text-on-surface-variant uppercase mb-1 flex items-center justify-center gap-1">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#ba1a1a] inline-block"></span>
+              Tensão (Risco)
+            </div>
+            <div class="font-headline text-2xl font-bold text-primary">{{ metrica_data.negativo }}%</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Side Rail -->
+      <div class="lg:col-span-4 space-y-6">
+        
+        <!-- Bloco de Apoio Proativo / CVV 188 -->
+        <div class="bg-primary-container border-2 border-secondary-container rounded-xl p-6 relative overflow-hidden shadow-sm">
+          <div class="relative z-10">
+            <div class="flex items-center gap-2 mb-3 text-secondary-container">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+              <span class="text-xs font-bold uppercase tracking-wider">Atenção Prioritária</span>
+            </div>
+            <p class="text-sm text-slate-300 mb-6 leading-relaxed">
+              {% if metrica_data.negativo >= 40 or metrica_data.estado == 'Atenção' %}
+                Notamos um padrão mais denso em seus registros recentes. Lembre-se: na <strong class="text-secondary-container font-semibold">Vels</strong>, você nunca caminha sozinho(a).
+              {% else %}
+                Cuidar da mente é um processo contínuo. Se sentir sobrecarga emocional em qualquer momento, o apoio profissional gratuito está ao seu alcance.
+              {% endif %}
+            </p>
+            <a class="inline-flex items-center justify-center w-full py-3 bg-secondary-container text-on-secondary-container text-sm font-bold rounded-lg hover:scale-[0.99] transition-all shadow-md" href="tel:188">
+              <span class="material-symbols-outlined mr-2 text-base">phone_in_talk</span>
+              Ligar para o CVV (188) — Gratuito
+            </a>
+          </div>
+          <!-- Elemento decorativo de fundo -->
+          <div class="absolute -right-4 -bottom-4 opacity-10 pointer-events-none">
+            <span class="material-symbols-outlined text-[130px] text-white">shield_moon</span>
+          </div>
+        </div>
+
+        <!-- Guidance Card / Apoio Rizomático -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 custom-shadow">
+          <h3 class="font-headline text-lg font-bold text-primary mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary">psychology</span>
+            Espaço de Escuta Suriel
+          </h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed mb-4">
+            Nosso assistente empático está pronto para ouvir seus desabafos com sigilo ético absoluto.
+          </p>
+          <div class="p-3 bg-surface-container-low rounded-lg border border-slate-200 mb-4">
+            <div class="text-xs text-secondary font-semibold flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">lock</span>
+              Ambiente Criptografado &amp; Seguro
+            </div>
+            <div class="text-[11px] text-slate-500 mt-1">
+              Conversas não são compartilhadas e servem para suporte imediato.
+            </div>
+          </div>
+          <a href="{{ url_for('main.suriel_chat') }}" class="w-full inline-flex items-center justify-center gap-2 py-2.5 border border-primary text-primary font-bold text-xs rounded-lg hover:bg-primary hover:text-white transition-all">
+            <span class="material-symbols-outlined text-sm">chat</span>
+            Conversar com Suriel
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Rodapé: Voltar ao Feed -->
+    <div class="mt-12 flex justify-center">
+      <a class="inline-flex items-center gap-2 px-8 py-3 border border-primary text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all duration-300 shadow-sm" href="{{ url_for('main.feed') }}">
+        <span class="material-symbols-outlined text-lg">arrow_back</span>
+        Voltar para o Feed
+      </a>
+    </div>
+
+  </main>
+
+  <!-- Bottom Navigation (Mobile Only) -->
+  <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container-lowest border-t border-outline-variant shadow-lg rounded-t-xl">
+    <a href="{{ url_for('main.feed') }}" class="flex flex-col items-center justify-center text-on-surface-variant p-2">
+      <span class="material-symbols-outlined">dynamic_feed</span>
+      <span class="text-[10px] font-semibold">Feed</span>
+    </a>
+    <a href="{{ url_for('main.dashboard') }}" class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="text-[10px] font-bold">Dash</span>
+    </a>
+    <a href="{{ url_for('main.suriel_chat') }}" class="flex flex-col items-center justify-center text-on-surface-variant p-2">
+      <span class="material-symbols-outlined">smart_toy</span>
+      <span class="text-[10px] font-semibold">Suriel</span>
+    </a>
+    <a href="{{ url_for('main.perfil') }}" class="flex flex-col items-center justify-center text-on-surface-variant p-2">
+      <span class="material-symbols-outlined">person</span>
+      <span class="text-[10px] font-semibold">Perfil</span>
+    </a>
+  </nav>
+
+  {% if metrica_data.paz > 0 or metrica_data.neutro > 0 or metrica_data.negativo > 0 %}
+  <script>
+    const ctx = document.getElementById('meuGrafico').getContext('2d');
+    const myChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Paz (Positivo)', 'Equilíbrio (Neutro)', 'Tensão (Risco)'],
+        datasets: [{
+          data: [{{ metrica_data.paz }}, {{ metrica_data.neutro }}, {{ metrica_data.negativo }}],
+          backgroundColor: [
+            '#DAA520', // Paz / Positivo (Dourado Vels)
+            '#0A1128', // Equilíbrio / Neutro (Deep Navy)
+            '#ba1a1a'  // Tensão / Negativo (Muted Red)
           ],
-        },
-        options: {
-          cutout: "74%",
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => ` ${ctx.label}: ${ctx.raw}%`,
-              },
-            },
+          borderWidth: 0,
+          hoverOffset: 12
+        }]
+      },
+      options: {
+        cutout: '76%',
+        plugins: {
+          legend: {
+            display: false
           },
-          animation: {
-            animateRotate: true,
-            duration: 900,
-            easing: "easeInOutQuart",
-          },
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              label: function(context) {
+                return ` ${context.label}: ${context.raw}%`;
+              }
+            }
+          }
         },
-      });
-    </script>
-  </body>
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: {
+          animateScale: true,
+          animateRotate: true
+        }
+      }
+    });
+  </script>
+  {% endif %}
+
+</body>
 </html>
