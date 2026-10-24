@@ -203,6 +203,16 @@
     }
     scrollToBottom();
 
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     async function enviarMensagem(e) {
       e.preventDefault();
       const texto = chatInput.value.trim();
@@ -210,12 +220,13 @@
 
       chatInput.value = '';
       const agora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const textoSeguro = escapeHTML(texto);
 
-      // Adiciona o balão do usuário na tela
+      // Adiciona o balão do usuário na tela com segurança anti-XSS
       const userBubble = `
         <div class="flex flex-col items-end space-y-1 ml-auto max-w-[85%] md:max-w-[75%]">
           <div class="bg-primary text-white p-4 rounded-2xl rounded-tr-none shadow-xs text-sm leading-relaxed whitespace-pre-wrap">
-            ${texto}
+            ${textoSeguro}
           </div>
           <span class="text-[10px] text-slate-400 mr-1">${agora}</span>
         </div>
@@ -238,10 +249,11 @@
         typingIndicator.classList.add('hidden');
 
         if (data.resposta) {
+          const respostaSegura = escapeHTML(data.resposta);
           const surielBubble = `
             <div class="flex flex-col items-start space-y-1 max-w-[85%] md:max-w-[75%]">
               <div class="bg-white border border-slate-200/90 text-slate-800 p-4 rounded-2xl rounded-tl-none shadow-xs text-sm leading-relaxed whitespace-pre-wrap">
-                ${data.resposta}
+                ${respostaSegura}
               </div>
               <span class="text-[10px] text-slate-400 ml-1">${agora}</span>
             </div>

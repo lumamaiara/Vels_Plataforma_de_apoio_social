@@ -45,6 +45,16 @@ def create_app(config: dict | None = None):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = secret_key
 
+    # ── Blindagem de Cookies de Sessão (Anti-XSS e Anti-CSRF) ──────────────
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    # Habilita cookie Secure se em ambiente de produção ou Vercel (HTTPS)
+    app.config['SESSION_COOKIE_SECURE'] = (
+        os.environ.get('FLASK_ENV') == 'production' or os.environ.get('VERCEL') == '1'
+    )
+    from datetime import timedelta
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+
     if config:
         app.config.update(config)
 
@@ -73,5 +83,14 @@ def create_app(config: dict | None = None):
     @app.context_processor
     def inject_now():
         return {'now': datetime.utcnow()}
+
+    # ── Cabeçalhos de Segurança HTTP Defensivos ─────────────────────────────
+    @app.after_request
+    def set_security_headers(response):
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        return response
 
     return app

@@ -24,6 +24,8 @@ class Usuario(UserMixin, db.Model):
                                     cascade='all, delete-orphan')
     mensagens     = db.relationship('MensagemSuriel', backref='usuario',
                                     lazy=True, cascade='all, delete-orphan')
+    reacoes       = db.relationship('Reacao', backref='usuario',
+                                    lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Usuario {self.email}>'

@@ -116,6 +116,10 @@ def criar_post():
         flash('Escreva algo antes de publicar.', 'danger')
         return redirect(url_for('main.feed'))
 
+    if len(texto) > 1000:
+        flash('O desabafo deve conter no máximo 1000 caracteres.', 'danger')
+        return redirect(url_for('main.feed'))
+
     sentimento, risco = analisar_texto(texto)
     post = Postagem(
         texto=texto,
@@ -163,6 +167,11 @@ def apoiar(post_id):
 @login_required
 def feedback(post_id, correto):
     post = Postagem.query.get_or_404(post_id)
+    # Somente o próprio autor tem permissão de avaliar a acurácia no seu relato
+    if post.usuario_id != current_user.id:
+        flash('Apenas o autor pode avaliar a classificação da sua publicação.', 'info')
+        return redirect(url_for('main.feed'))
+
     if correto == 0:
         mapa = {'positivo': 'negativo', 'negativo': 'positivo', 'neutro': 'neutro'}
         post.sentimento  = mapa.get(post.sentimento, 'neutro')
@@ -180,6 +189,10 @@ def comentar(post_id):
 
     if not texto:
         flash('Escreva uma mensagem de apoio antes de enviar.', 'danger')
+        return redirect(url_for('main.feed'))
+
+    if len(texto) > 500:
+        flash('O comentário deve ter no máximo 500 caracteres.', 'danger')
         return redirect(url_for('main.feed'))
 
     comentario = Comentario(
@@ -242,6 +255,9 @@ def suriel_mensagem():
 
     if not texto:
         return jsonify({'erro': 'Mensagem vazia'}), 400
+
+    if len(texto) > 1000:
+        return jsonify({'erro': 'A mensagem excede o limite máximo de 1000 caracteres.'}), 400
 
     # Salva mensagem do usuário
     db.session.add(MensagemSuriel(
